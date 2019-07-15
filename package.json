@@ -1,0 +1,38 @@
+{
+  "name": "yet-another-yandex-translate",
+  "version": "1.0.0",
+  "description": "Yet another Yandex.Translate service client",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build" : "tsc",
+    "prepublish": "tsc",
+    "tslint": "tslint -p tsconfig.json -c tslint.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/norbornen/yet-another-yandex-translate.git"
+  },
+  "keywords": [
+    "translate",
+    "yandex",
+    "typescript"
+  ],
+  "author": "norbornen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/norbornen/yet-another-yandex-translate/issues"
+  },
+  "homepage": "https://github.com/norbornen/yet-another-yandex-translate#readme",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "qs": "^6.7.0"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/qs": "^6.5.3",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
+  }
+}
