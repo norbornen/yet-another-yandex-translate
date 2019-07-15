@@ -1,4 +1,7 @@
 # yet-another-yandex-translate
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/norbornen/yet-another-yandex-translate.svg)](https://greenkeeper.io/)
+
 Yet another Yandex.Translate service client
 
 ## Installation
