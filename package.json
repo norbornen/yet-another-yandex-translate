@@ -1,11 +1,11 @@
 {
   "name": "yet-another-yandex-translate",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Yet another Yandex.Translate service client",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build" : "tsc",
+    "build": "tsc",
     "prepublish": "tsc",
     "tslint": "tslint -p tsconfig.json -c tslint.json",
     "test": "echo \"Error: no test specified\" && exit 1"
