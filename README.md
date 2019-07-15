@@ -28,6 +28,10 @@ await yt.getLangs();
 await yt.getLangs({ui: 'en'});            // {dirs: [], langs: {}}
 ```
 
+## List of supported languages.
+
+https://yandex.ru/dev/translate/doc/dg/concepts/api-overview-docpage/#api-overview__languages
+
 ## Bugs and features
 
 Please file in GitHub.
