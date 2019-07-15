@@ -12,9 +12,9 @@ Yet another Yandex.Translate service client
 
         $ npm install --save yet-another-yandex-translate
 
-3.  Use it:
+## Usage
 
-```
+```javascript
 import YandexTranslate from 'yet-another-yandex-translate';
 
 const yt = new YandexTranslate('<< YOUR YANDEX API KEY HERE >>');
