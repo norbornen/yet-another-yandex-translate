@@ -34,18 +34,18 @@ interface IResponseRejected {
     message: string;
 }
 
-interface ITranslateResponseFilled {
+interface ITranslateResponse {
     code: number;
     lang: string;
     text: string[];
 }
 
-interface IDetectResponseFilled {
+interface IDetectResponse {
     code: number;
     lang: string;
 }
 
-interface IGetLangsResponseFilled {
+interface IGetLangsResponse {
     dirs: string[];
     langs?: {[key: string]: string};
 }
@@ -89,13 +89,13 @@ class YandexTranslate {
 
     public async translate<T extends string | string[]>(text: T, opts: ITranslateOptions): Promise<T> {
         if (YandexTranslate.isEmpty(text)) {
-            return text;
+            return;
         }
 
         const lang = opts.to && opts.from ? `${opts.from}-${opts.to}` : opts.to;
         const format = opts.format || ETranslateFormat.plain;
 
-        const data = await this.request<ITranslateResponseFilled | IResponseRejected>('translate', { lang, text, format });
+        const data = await this.request<ITranslateResponse | IResponseRejected>('translate', { lang, text, format });
         if (!data || ('code' in data && data.code !== 200) || !('text' in data)) {
             throw new YandexTranslateError(data);
         }
@@ -109,7 +109,7 @@ class YandexTranslate {
             return;
         }
 
-        const data = await this.request<IDetectResponseFilled | IResponseRejected>('detect', { text, ...opts });
+        const data = await this.request<IDetectResponse | IResponseRejected>('detect', { text, ...opts });
         if (!data || ('code' in data && data.code !== 200) || !('lang' in data)) {
             throw new YandexTranslateError(data);
         }
@@ -117,13 +117,13 @@ class YandexTranslate {
         return data.lang;
     }
 
-    public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponseFilled> {
-        const data = await this.request<IGetLangsResponseFilled | IResponseRejected>('getLangs', opts);
+    public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse> {
+        const data = await this.request<IGetLangsResponse | IResponseRejected>('getLangs', opts);
         if (!data || ('code' in data && (data as IResponseRejected).code !== 200)) {
             throw new YandexTranslateError(data as IResponseRejected);
         }
 
-        return data as IGetLangsResponseFilled;
+        return data as IGetLangsResponse;
     }
 
     private async request<T>(endpoint: string, params?: object): Promise<T> {

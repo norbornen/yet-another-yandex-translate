@@ -1,3 +1,4 @@
+// tslint:disable:no-null-keyword
 import YandexTranslate from '../src/index';
 import YandexTranslateError from '../src/error';
 
@@ -21,14 +22,13 @@ test('#translate', async () => {
 });
 
 test('#translate', async () => {
-    // tslint:disable:no-null-keyword
     const text = 'expect';
     const data = await yt.translate([ text, null, text ], {from: 'ru', to: 'en'});
     expect(Array.isArray(data)).toBe(true);
     expect(data).toEqual([ text, '', text ]);
 });
 
-test('#translate-multy', async () => {
+// test('#translate-multy', async () => {
     // let text = 'expect';
     // let data = await yt.translate(text, {from: 'ru', to: ['en', 'en']});
     // expect(typeof data).toBe('string');
@@ -38,43 +38,44 @@ test('#translate-multy', async () => {
     // data = await yt.translate(text, {to: ['en', 'en'], format: 'html'});
     // expect(typeof data).toBe('string');
     // expect(data).toEqual(text);
-});
+// });
 
-test('#translate-multy', async () => {
+// test('#translate-multy', async () => {
     // // tslint:disable:no-null-keyword
     // const text = 'expect';
     // const data = await yt.translate([ text, null, text ], {from: 'ru', to: 'en'});
     // expect(Array.isArray(data)).toBe(true);
     // expect(data).toEqual([ text, '', text ]);
-});
+// });
 
 test('#translate-err', async () => {
     expect.assertions(3);
-    await expect(yt.translate(null, {to: 'en'})).resolves.toEqual(null);
-    await expect(yt.translate([], {to: 'en'})).resolves.toEqual([]);
+    await expect(yt.translate(null, {to: 'en'})).resolves.toEqual(undefined);
+    await expect(yt.translate([], {to: 'en'})).resolves.toEqual(undefined);
     await expect(yt.translate({} as string[], {to: 'en'})).rejects.toThrow(YandexTranslateError);
 });
 
-test('#detect0', async () => {
-    const lang = await yt.detect('expect');
-    expect(lang).toEqual('en');
+test('#detect', async () => {
+    expect.assertions(4);
+    await expect(yt.detect('expect')).resolves.toEqual('en');
+    await expect(yt.detect('переводчик', {hint: 'sr,az'})).resolves.toEqual('ru');
+    await expect(yt.detect(null)).resolves.toEqual(undefined);
+    await expect(yt.detect('')).resolves.toEqual(undefined);
 });
 
-test('#detect1', async () => {
-    const lang = await yt.detect('переводчик', {hint: 'sr,az'});
-    expect(lang).toEqual('ru');
+test('#detect-err', async () => {
+    expect.assertions(1);
+    await expect(yt.detect({a: 1} as unknown as string)).rejects.toThrow(YandexTranslateError);
 });
 
-test('#getLangs0', async () => {
-    const data = await yt.getLangs();
+test('#getLangs', async () => {
+    let data = await yt.getLangs();
     expect(typeof data).toBe('object');
     expect('dirs' in data).toBe(true);
     expect(data.dirs.length > 0).toBe(true);
     expect(data.dirs).toEqual(expect.arrayContaining(['ru-en']));
-});
 
-test('#getLangs1', async () => {
-    const data = await yt.getLangs({ui: 'en'});
+    data = await yt.getLangs({ui: 'en'});
     expect(typeof data).toBe('object');
     expect('langs' in data).toBe(true);
     expect(data.langs).toEqual(expect.objectContaining({en: 'English'}));

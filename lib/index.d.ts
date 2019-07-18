@@ -14,7 +14,7 @@ interface IDetectOptions {
 interface IGetLangsOptions {
     ui?: string;
 }
-interface IGetLangsResponseFilled {
+interface IGetLangsResponse {
     dirs: string[];
     langs?: {
         [key: string]: string;
@@ -27,7 +27,7 @@ declare class YandexTranslate {
     constructor(apiKey: string);
     translate<T extends string | string[]>(text: T, opts: ITranslateOptions): Promise<T>;
     detect(text: string, opts?: IDetectOptions): Promise<string>;
-    getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponseFilled>;
+    getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse>;
     private request;
     private static isEmpty;
 }

@@ -18,7 +18,8 @@
   "keywords": [
     "translate",
     "yandex",
-    "typescript"
+    "typescript",
+    "async"
   ],
   "author": "norbornen",
   "license": "MIT",
