@@ -15,6 +15,12 @@ interface ITranslateOptions {
     format?: TranslateFormat;
 }
 
+interface IMultTranslateOptions {
+    from?: string;
+    to: string[];
+    format?: TranslateFormat;
+}
+
 interface IDetectOptions {
     hint?: string;
 }
@@ -81,9 +87,7 @@ class YandexTranslate {
         );
     }
 
-    public async translate(text: string, opts: ITranslateOptions): Promise<string>;
-    public async translate(text: string[], opts: ITranslateOptions): Promise<string[]>;
-    public async translate(text: string | string[], opts: ITranslateOptions): Promise<string | string[]> {
+    public async translate<T extends string | string[]>(text: T, opts: ITranslateOptions): Promise<T> {
         if (YandexTranslate.isEmpty(text)) {
             return text;
         }
@@ -97,7 +101,7 @@ class YandexTranslate {
         }
 
         const outputText = data.text;
-        return Array.isArray(text) ? outputText as string[] : outputText[0] as string;
+        return (Array.isArray(text) ? outputText : outputText[0]) as T;
     }
 
     public async detect(text: string, opts?: IDetectOptions): Promise<string> {
