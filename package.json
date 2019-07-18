@@ -8,7 +8,7 @@
     "build": "tsc",
     "prepublish": "tsc",
     "tslint": "tslint -p tsconfig.json -c tslint.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -31,8 +31,17 @@
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.6.8",
     "@types/qs": "^6.5.3",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    }
   }
 }

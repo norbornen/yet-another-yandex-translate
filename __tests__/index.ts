@@ -1,46 +1,81 @@
-// import { strict as assert } from 'assert';
 import YandexTranslate from '../src/index';
+import YandexTranslateError from '../src/error';
 
 const translateKey = 'trnsl.1.1.20131018T175412Z.6e9fa29e525b4697.3542f82ffa6916d1ccd64201d8a72c023892ae5e';
 const yt = new YandexTranslate(translateKey);
 
+beforeEach(() => {
+    jest.setTimeout(40000);
+});
+
+test('#translate', async () => {
+    let text = 'expect';
+    let data = await yt.translate(text, {from: 'ru', to: 'en'});
+    expect(typeof data).toBe('string');
+    expect(data).toEqual(text);
+
+    text = `<span>${text}</span>`;
+    data = await yt.translate(text, {from: 'ru', to: 'en', format: 'html'});
+    expect(typeof data).toBe('string');
+    expect(data).toEqual(text);
+});
+
+test('#translate', async () => {
+    // tslint:disable:no-null-keyword
+    const text = 'expect';
+    const data = await yt.translate([ text, null, text ], {from: 'ru', to: 'en'});
+    expect(Array.isArray(data)).toBe(true);
+    expect(data).toEqual([ text, '', text ]);
+});
+
+test('#translate-multy', async () => {
+    // let text = 'expect';
+    // let data = await yt.translate(text, {from: 'ru', to: ['en', 'en']});
+    // expect(typeof data).toBe('string');
+    // expect(data).toEqual(text);
+
+    // text = `<span>${text}</span>`;
+    // data = await yt.translate(text, {to: ['en', 'en'], format: 'html'});
+    // expect(typeof data).toBe('string');
+    // expect(data).toEqual(text);
+});
+
+test('#translate-multy', async () => {
+    // // tslint:disable:no-null-keyword
+    // const text = 'expect';
+    // const data = await yt.translate([ text, null, text ], {from: 'ru', to: 'en'});
+    // expect(Array.isArray(data)).toBe(true);
+    // expect(data).toEqual([ text, '', text ]);
+});
+
+test('#translate-err', async () => {
+    expect.assertions(3);
+    await expect(yt.translate(null, {to: 'en'})).resolves.toEqual(null);
+    await expect(yt.translate([], {to: 'en'})).resolves.toEqual([]);
+    await expect(yt.translate({} as string[], {to: 'en'})).rejects.toThrow(YandexTranslateError);
+});
+
+test('#detect0', async () => {
+    const lang = await yt.detect('expect');
+    expect(lang).toEqual('en');
+});
+
+test('#detect1', async () => {
+    const lang = await yt.detect('переводчик', {hint: 'sr,az'});
+    expect(lang).toEqual('ru');
+});
+
 test('#getLangs0', async () => {
     const data = await yt.getLangs();
-    // expect(data). dirs
-    // console.log('res0', JSON.stringify(res, undefined, 2));
+    expect(typeof data).toBe('object');
+    expect('dirs' in data).toBe(true);
+    expect(data.dirs.length > 0).toBe(true);
+    expect(data.dirs).toEqual(expect.arrayContaining(['ru-en']));
 });
 
 test('#getLangs1', async () => {
     const data = await yt.getLangs({ui: 'en'});
-    // dirs langs
-    // console.log('res1', JSON.stringify(res, undefined, 2));
-    // expect(1 + 2).toBe(4);
-});
-
-test('#translate', async () => {
-    // await yt.translate(text, {from: 'ru', to: 'sr', format: 'html'});
-});
-
-test('#translate', async () => {
-    // await yt.translate([ text, text3, text2 ], {from: 'ru', to: 'sr', format: 'html'});
-});
-
-test('#translate', async () => {
-    // await yt.translate(text3, {from: 'ru', to: 'sr'});
-});
-
-test('#translate', async () => {
-    // await yt.translate([], {from: 'ru', to: 'sr', format: 'html'});
-});
-
-test('#translate', async () => {
-    // fail -> await yt.translate({} as string[], {from: 'ru', to: 'sr', format: 'html'});
-});
-
-test('#detect0', async () => {
-    // await yt.detect(text4);
-});
-
-test('#detect1', async () => {
-    // await yt.detect(text4, {hint: 'en,fr'});
+    expect(typeof data).toBe('object');
+    expect('langs' in data).toBe(true);
+    expect(data.langs).toEqual(expect.objectContaining({en: 'English'}));
 });

@@ -40,7 +40,7 @@ interface IDetectResponseFilled {
 }
 
 interface IGetLangsResponseFilled {
-    dirs?: string[];
+    dirs: string[];
     langs?: {[key: string]: string};
 }
 
@@ -113,7 +113,7 @@ class YandexTranslate {
         return data.lang;
     }
 
-    public async getLangs(opts?: IGetLangsOptions): Promise<any> {
+    public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponseFilled> {
         const data = await this.request<IGetLangsResponseFilled | IResponseRejected>('getLangs', opts);
         if (!data || ('code' in data && (data as IResponseRejected).code !== 200)) {
             throw new YandexTranslateError(data as IResponseRejected);
