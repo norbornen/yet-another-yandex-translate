@@ -8,7 +8,8 @@
     "build": "tsc",
     "prepublish": "tsc",
     "tslint": "tslint -p tsconfig.json -c tslint.json",
-    "test": "jest"
+    "test": "jest",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
