@@ -1,6 +1,8 @@
-# yet-another-yandex-translate
+# yet-another-yandex-translate <sup>[![Version Badge][2]][1]</sup>
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/norbornen/yet-another-yandex-translate.svg)](https://greenkeeper.io/)
+[![dependency status][5]][6]
+[![dev dependency status][7]][8]
 
 Yet another Yandex.Translate service client
 
@@ -38,3 +40,10 @@ https://yandex.ru/dev/translate/doc/dg/concepts/api-overview-docpage/#api-overvi
 ## Bugs and features
 
 Please file in GitHub.
+
+[1]: https://npmjs.org/package/yet-another-yandex-translate
+[2]: http://versionbadg.es/norbornen/yet-another-yandex-translate.svg
+[5]: https://david-dm.org/norbornen/yet-another-yandex-translate.svg
+[6]: https://david-dm.org/norbornen/yet-another-yandex-translate
+[7]: https://david-dm.org/norbornen/yet-another-yandex-translate/dev-status.svg
+[8]: https://david-dm.org/norbornen/yet-another-yandex-translate?type=dev
