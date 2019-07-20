@@ -4,7 +4,7 @@ declare enum ETranslateFormat {
     plain = "plain"
 }
 declare type TranslateFormat = keyof typeof ETranslateFormat;
-interface ITranslateOptions {
+interface ITranslateOneDirectionOptions {
     from?: string;
     to: string;
     format?: TranslateFormat;
@@ -26,8 +26,8 @@ declare class YandexTranslate {
     protected static baseURL: string;
     protected client: AxiosInstance;
     constructor(apiKey: string);
-    translate(text: string, opts: ITranslateOptions): Promise<string>;
-    translate(text: string[], opts: ITranslateOptions): Promise<string[]>;
+    translate(text: string, opts: ITranslateOneDirectionOptions): Promise<string>;
+    translate(text: string[], opts: ITranslateOneDirectionOptions): Promise<string[]>;
     detect(text: string, opts?: IDetectOptions): Promise<string>;
     getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse>;
     protected request<T>(endpoint: string, params?: object): Promise<T>;
