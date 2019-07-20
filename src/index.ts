@@ -9,13 +9,13 @@ enum ETranslateFormat {
 
 type TranslateFormat = keyof typeof ETranslateFormat;
 
-interface ITranslateOptions {
+interface ITranslateOneDirectionOptions {
     from?: string;
     to: string;
     format?: TranslateFormat;
 }
 
-interface IMultTranslateOptions {
+interface ITranslateMultyDirectionOptions {
     from?: string;
     to: string[];
     format?: TranslateFormat;
@@ -58,14 +58,14 @@ class YandexTranslate {
         this.client = YandexTranslate.initClient();
     }
 
-    public async translate(text: string, opts: ITranslateOptions): Promise<string>;
-    public async translate(text: string[], opts: ITranslateOptions): Promise<string[]>;
-    public async translate<T extends string | string[]>(text: T, opts: ITranslateOptions): Promise<T> {
+    public async translate(text: string, opts: ITranslateOneDirectionOptions): Promise<string>;
+    public async translate(text: string[], opts: ITranslateOneDirectionOptions): Promise<string[]>;
+    public async translate<T extends string | string[]>(text: T, opts: ITranslateOneDirectionOptions): Promise<T> {
         if (!YandexTranslate.isValid(text) || !opts) {
             throw new YandexTranslateError('INVALID_PARAM');
         }
         if (YandexTranslate.isEmpty(text) || !opts.to) {
-            return text; // empty string -> empty string; empty array -> empty array
+            return text; // empty string -> empty string; empty array -> empty array, null -> null
         }
 
         const lang = opts.to && opts.from ? `${opts.from}-${opts.to}` : opts.to;
@@ -143,7 +143,7 @@ class YandexTranslate {
     }
 
     protected static isValid(x: any): boolean {
-        if (typeof x === 'string') {
+        if (typeof x === 'string' || x === null || x === undefined) {
             return true;
         }
         if (Array.isArray(x)) {

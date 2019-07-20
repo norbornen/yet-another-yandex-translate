@@ -20,8 +20,10 @@ test('#translate-text', async () => {
 });
 
 test('#translate-text', async () => {
-    expect.assertions(1);
+    expect.assertions(3);
     await expect(yt.translate('', {to: 'en'})).resolves.toEqual('');
+    await expect(yt.translate(null, {to: 'en'})).resolves.toEqual(null);
+    await expect(yt.translate(undefined, {to: 'en'})).resolves.toEqual(undefined);
 });
 
 test('#translate-html', async () => {
@@ -44,11 +46,9 @@ test('#translate-array', async () => {
 });
 
 test('#translate-err', async () => {
-    expect.assertions(5);
+    expect.assertions(3);
     await expect(yt.translate('test', null)).rejects.toThrow(YandexTranslateError);
     await expect(yt.translate('test', {to: null})).resolves.toEqual('test');
-    await expect(yt.translate(null, {to: 'en'})).rejects.toThrow(YandexTranslateError);
-    await expect(yt.translate(undefined, {to: 'en'})).rejects.toThrow(YandexTranslateError);
     await expect(yt.translate({} as unknown as string[], {to: 'en'})).rejects.toThrow(YandexTranslateError);
 });
 
@@ -74,15 +74,16 @@ test('#translate-multy', async () => {
 */
 
 test('#detect', async () => {
-    expect.assertions(3);
+    expect.assertions(5);
     await expect(yt.detect('expect')).resolves.toEqual('en');
     await expect(yt.detect('переводчик', {hint: 'sr,az'})).resolves.toEqual('ru');
     await expect(yt.detect('')).resolves.toEqual(undefined);
+    await expect(yt.detect(null)).resolves.toEqual(undefined);
+    await expect(yt.detect(undefined)).resolves.toEqual(undefined);
 });
 
 test('#detect-err', async () => {
-    expect.assertions(2);
-    await expect(yt.detect(null)).rejects.toThrow(YandexTranslateError);
+    expect.assertions(1);
     await expect(yt.detect({} as unknown as string)).rejects.toThrow(YandexTranslateError);
 });
 
