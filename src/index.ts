@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosInstance } from 'axios';
 import YandexTranslateError from './error';
+import stringify from './tools/stringify';
 
 enum ETranslateFormat {
     html = 'html',
@@ -121,21 +122,8 @@ class YandexTranslate {
         } as AxiosRequestConfig);
 
         client.interceptors.request.use((request: AxiosRequestConfig) => {
-            if (request.data && request.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-                request.data = Object.keys(request.data || {}).reduce((acc, k) => {
-                    let v = request.data[ k ];
-                    if (v !== null && v !== undefined) {
-                        if (Array.isArray(v)) {
-                            acc = acc.concat(v.map((o) => `${k}=${o !== null && o !== undefined ? encodeURIComponent(o) : ''}`));
-                        } else {
-                            if (typeof v === 'object') {
-                                v = JSON.stringify(v);
-                            }
-                            acc.push(`${k}=${encodeURIComponent(v)}`);
-                        }
-                    }
-                    return acc;
-                }, []).join('&');
+            if (request.headers['Content-Type'] === 'application/x-www-form-urlencoded' && request.data) {
+                request.data = stringify(request.data);
             }
             return request;
         });

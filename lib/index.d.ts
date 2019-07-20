@@ -26,7 +26,8 @@ declare class YandexTranslate {
     protected static baseURL: string;
     protected client: AxiosInstance;
     constructor(apiKey: string);
-    translate<T extends string | string[]>(text: T, opts: ITranslateOptions): Promise<T>;
+    translate(text: string, opts: ITranslateOptions): Promise<string>;
+    translate(text: string[], opts: ITranslateOptions): Promise<string[]>;
     detect(text: string, opts?: IDetectOptions): Promise<string>;
     getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse>;
     protected request<T>(endpoint: string, params?: object): Promise<T>;
