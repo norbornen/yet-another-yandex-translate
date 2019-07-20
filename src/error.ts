@@ -11,8 +11,9 @@ class YandexTranslateError extends Error {
             super(reason);
         } else {
             super((reason && reason.message) || 'Something wrong');
-            this.code = (reason && reason.code) || 0;
+            this.code = reason && reason.code;
         }
+        this.code = this.code || 0;
         Object.setPrototypeOf(this, new.target.prototype);
     }
 }

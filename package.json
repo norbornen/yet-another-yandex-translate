@@ -8,7 +8,7 @@
     "build": "tsc",
     "prepublish": "tsc",
     "tslint": "tslint -p tsconfig.json -c tslint.json",
-    "test": "jest",
+    "test": "jest --verbose",
     "postversion": "git push && git push --tags"
   },
   "repository": {
@@ -28,8 +28,7 @@
   },
   "homepage": "https://github.com/norbornen/yet-another-yandex-translate#readme",
   "dependencies": {
-    "axios": "^0.19.0",
-    "qs": "^6.7.0"
+    "axios": "^0.19.0"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

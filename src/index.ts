@@ -1,5 +1,4 @@
 import axios, { AxiosRequestConfig, AxiosInstance } from 'axios';
-import qs from 'qs';
 import YandexTranslateError from './error';
 
 enum ETranslateFormat {
@@ -52,44 +51,20 @@ interface IGetLangsResponse {
 
 class YandexTranslate {
     protected static baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
-    private client: AxiosInstance;
+    protected client: AxiosInstance;
 
-    constructor(private apiKey: string) {
-        this.client = axios.create({
-            baseURL: YandexTranslate.baseURL,
-            timeout: 30 * 1000,
-            headers: {
-                'User-Agent': 'YetAnotherYandexTranslateClient',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept-Encoding': 'gzip, deflate, br'
-            }
-        } as AxiosRequestConfig);
-        this.client.interceptors.request.use((request: AxiosRequestConfig) => {
-            if (request.data && request.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-                if ('text' in request.data && Array.isArray(request.data.text)) {
-                    // tslint:disable-next-line:no-null-keyword
-                    request.data.text = request.data.text.map((x: string) => x === undefined ? null : x);
-                }
-                request.data = qs.stringify(request.data, {arrayFormat: 'repeat'});
-            }
-            return request;
-        });
-        this.client.interceptors.response.use(
-            undefined,
-            (err) => {
-                if ('response' in err && err.response && 'data' in err.response) {
-                    console.error('An error occured while translating: ', err.response.data);
-                    throw new YandexTranslateError(err.response.data);
-                }
-                console.error('An error occured while translating: ', err);
-                throw err;
-            }
-        );
+    constructor(protected apiKey: string) {
+        this.client = YandexTranslate.initClient();
     }
 
+    public async translate(text: string, opts: ITranslateOptions): Promise<string>;
+    public async translate(text: string[], opts: ITranslateOptions): Promise<string[]>;
     public async translate<T extends string | string[]>(text: T, opts: ITranslateOptions): Promise<T> {
-        if (YandexTranslate.isEmpty(text)) {
-            return;
+        if (!YandexTranslate.isValid(text) || !opts) {
+            throw new YandexTranslateError('INVALID_PARAM');
+        }
+        if (YandexTranslate.isEmpty(text) || !opts.to) {
+            return text; // empty string -> empty string; empty array -> empty array
         }
 
         const lang = opts.to && opts.from ? `${opts.from}-${opts.to}` : opts.to;
@@ -105,6 +80,9 @@ class YandexTranslate {
     }
 
     public async detect(text: string, opts?: IDetectOptions): Promise<string> {
+        if (!YandexTranslate.isValid(text)) {
+            throw new YandexTranslateError('INVALID_PARAM');
+        }
         if (YandexTranslate.isEmpty(text)) {
             return;
         }
@@ -126,12 +104,67 @@ class YandexTranslate {
         return data as IGetLangsResponse;
     }
 
-    private async request<T>(endpoint: string, params?: object): Promise<T> {
+    protected async request<T>(endpoint: string, params?: object): Promise<T> {
         const { data }: { data: T } = await this.client.post(endpoint, { key: this.apiKey, ...params });
         return data;
     }
 
-    private static isEmpty(x: string | string[]): boolean {
+    protected static initClient(): AxiosInstance {
+        const client = axios.create({
+            baseURL: YandexTranslate.baseURL,
+            timeout: 30 * 1000,
+            headers: {
+                'User-Agent': 'YetAnotherYandexTranslateClient',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept-Encoding': 'gzip, deflate, br'
+            }
+        } as AxiosRequestConfig);
+
+        client.interceptors.request.use((request: AxiosRequestConfig) => {
+            if (request.data && request.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+                request.data = Object.keys(request.data || {}).reduce((acc, k) => {
+                    let v = request.data[ k ];
+                    if (v !== null && v !== undefined) {
+                        if (Array.isArray(v)) {
+                            acc = acc.concat(v.map((o) => `${k}=${o !== null && o !== undefined ? encodeURIComponent(o) : ''}`));
+                        } else {
+                            if (typeof v === 'object') {
+                                v = JSON.stringify(v);
+                            }
+                            acc.push(`${k}=${encodeURIComponent(v)}`);
+                        }
+                    }
+                    return acc;
+                }, []).join('&');
+            }
+            return request;
+        });
+
+        client.interceptors.response.use(
+            undefined,
+            (err) => {
+                if ('response' in err && err.response && 'data' in err.response) {
+                    console.error('An error occured while translating: ', err.response.data);
+                    throw new YandexTranslateError(err.response.data);
+                }
+                console.error('An error occured while translating: ', err);
+                throw err;
+            }
+        );
+        return client;
+    }
+
+    protected static isValid(x: any): boolean {
+        if (typeof x === 'string') {
+            return true;
+        }
+        if (Array.isArray(x)) {
+            return !x.some((o) => !(typeof o === 'string' || o === null || o === undefined));
+        }
+        return false;
+    }
+
+    protected static isEmpty(x: string | string[]): boolean {
         if (Array.isArray(x)) {
             return !x.some((xx) => !YandexTranslate.isEmpty(xx));
         } else {

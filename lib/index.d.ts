@@ -1,3 +1,4 @@
+import { AxiosInstance } from 'axios';
 declare enum ETranslateFormat {
     html = "html",
     plain = "plain"
@@ -21,14 +22,16 @@ interface IGetLangsResponse {
     };
 }
 declare class YandexTranslate {
-    private apiKey;
+    protected apiKey: string;
     protected static baseURL: string;
-    private client;
+    protected client: AxiosInstance;
     constructor(apiKey: string);
     translate<T extends string | string[]>(text: T, opts: ITranslateOptions): Promise<T>;
     detect(text: string, opts?: IDetectOptions): Promise<string>;
     getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse>;
-    private request;
-    private static isEmpty;
+    protected request<T>(endpoint: string, params?: object): Promise<T>;
+    protected static initClient(): AxiosInstance;
+    protected static isValid(x: any): boolean;
+    protected static isEmpty(x: string | string[]): boolean;
 }
 export default YandexTranslate;
