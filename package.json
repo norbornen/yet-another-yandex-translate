@@ -2,15 +2,18 @@
   "name": "yet-another-yandex-translate",
   "version": "1.0.8",
   "description": "Yet another Yandex.Translate service client",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist",
   "scripts": {
-    "build": "tsc",
-    "prepublish": "tsc",
+    "build": "rm -rf dist && tsc",
+    "prepublishOnly": "yarn build",
     "tslint": "tslint -p tsconfig.json -c tslint.json",
     "test": "jest --verbose",
     "postversion": "git push && git push --tags"
   },
+  "files": [
+		"dist"
+	],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/norbornen/yet-another-yandex-translate.git"
@@ -28,7 +31,8 @@
   },
   "homepage": "https://github.com/norbornen/yet-another-yandex-translate#readme",
   "dependencies": {
-    "axios": "^0.19.0"
+    "axios": "^0.19.0",
+    "p-queue": "^6.1.0"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
