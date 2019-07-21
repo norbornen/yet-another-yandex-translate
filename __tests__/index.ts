@@ -9,6 +9,14 @@ beforeEach(() => {
     jest.setTimeout(40000);
 });
 
+
+test('#err', async () => {
+    expect.assertions(2);
+    const mtchs = await expect(new YandexTranslate(`${translateKey}1`).getLangs()).rejects;
+    await mtchs.toThrow(YandexTranslateError);
+    await mtchs.toEqual(expect.objectContaining({code: 401}));
+});
+
 test('#translate-text', async () => {
     expect.assertions(2);
 
@@ -52,27 +60,6 @@ test('#translate-err', async () => {
     await expect(yt.translate({} as unknown as string[], {to: 'en'})).rejects.toThrow(YandexTranslateError);
 });
 
-/*
-test('#translate-multy', async () => {
-    let text = 'expect';
-    let data = await yt.translate(text, {from: 'ru', to: ['en', 'en']});
-    expect(typeof data).toBe('string');
-    expect(data).toEqual(text);
-
-    text = `<span>${text}</span>`;
-    data = await yt.translate(text, {to: ['en', 'en'], format: 'html'});
-    expect(typeof data).toBe('string');
-    expect(data).toEqual(text);
-});
-
-test('#translate-multy', async () => {
-    const text = 'expect';
-    const data = await yt.translate([ text, null, text ], {from: 'ru', to: 'en'});
-    expect(Array.isArray(data)).toBe(true);
-    expect(data).toEqual([ text, '', text ]);
-});
-*/
-
 test('#detect', async () => {
     expect.assertions(5);
     await expect(yt.detect('expect')).resolves.toEqual('en');
@@ -82,16 +69,16 @@ test('#detect', async () => {
     await expect(yt.detect(undefined)).resolves.toEqual(undefined);
 });
 
-test('#detect-array', async () => {
-    let z: any = await yt.detect(['expect', 'переводчик', 'merci']);
-    console.log(z);
-    z = await yt.detect('merci');
-    console.log(z);
+test('#detect-multi', async () => {
+    expect.assertions(1);
+    const text = ['expect', 'переводчик', 'merci', 'expect', 'переводчик', 'merci'];
+    await expect(yt.detect(text)).resolves.toHaveLength(text.length);
 });
 
 test('#detect-err', async () => {
-    expect.assertions(1);
+    expect.assertions(2);
     await expect(yt.detect({} as unknown as string)).rejects.toThrow(YandexTranslateError);
+    await expect(yt.detect(['expect', ['1'] as unknown as string, 'merci'])).rejects.toThrow(YandexTranslateError);
 });
 
 test('#getLangs', async () => {

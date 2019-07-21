@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosInstance } from 'axios';
+import PQueue from 'p-queue';
 import YandexTranslateError from './error';
 import stringify from './tools/stringify';
 
@@ -15,15 +16,13 @@ interface ITranslateOneDirectionOptions {
     format?: TranslateFormat;
 }
 
-interface ITranslateMultyDirectionOptions {
+interface ITranslateMultiDirectionOptions {
     from?: string;
     to: string[];
     format?: TranslateFormat;
 }
 
-interface IDetectOptions {
-    hint?: string;
-}
+
 
 interface IGetLangsOptions {
     ui?: string;
@@ -40,22 +39,36 @@ interface ITranslateResponse {
     text: string[];
 }
 
-interface IDetectResponse {
-    code: number;
-    lang: string;
-}
-
 interface IGetLangsResponse {
     dirs: string[];
     langs?: {[key: string]: string};
 }
 
+interface IDetectOptions {
+    hint?: string;
+}
+
+interface IDetectResponse {
+    code: number;
+    lang: string;
+}
+
+interface IMultipleDetectResult {
+    lang: string;
+    error?: Error;
+}
+
+type DetectionResult<T> = T extends string[] ? IMultipleDetectResult[] : string;
+
+
 class YandexTranslate {
     protected static baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
-    protected client: AxiosInstance;
+    protected static timeout: number = 30 * 1000;
+    protected static concurrency: number = 10;
+    protected _client: AxiosInstance;
+    protected _queue: PQueue;
 
     constructor(protected apiKey: string) {
-        this.client = YandexTranslate.initClient();
     }
 
     public async translate(text: string, opts: ITranslateOneDirectionOptions): Promise<string>;
@@ -77,30 +90,25 @@ class YandexTranslate {
         }
 
         const outputText = data.text;
-        return (Array.isArray(text) ? outputText : outputText[0]) as T;
+        return (YandexTranslate.isStringArray(text) ? outputText : outputText[0]) as T;
     }
 
     public async detect(text: string, opts?: IDetectOptions): Promise<string>;
-    public async detect(text: string[], opts?: IDetectOptions): Promise<string[]>;
-    public async detect<T extends string | string[]>(text: T, opts?: IDetectOptions): Promise<string | string[]> {
+    public async detect(text: string[], opts?: IDetectOptions): Promise<IMultipleDetectResult[]>;
+    public async detect<T extends string | string[], U extends DetectionResult<T>>(text: T, opts?: IDetectOptions): Promise<U> {
         if (!YandexTranslate.isValid(text)) {
             throw new YandexTranslateError('INVALID_PARAM');
         }
 
-        if (YandexTranslate.isStringArray(text)) { // <- плохо
-            return Promise.all(text.map((x) => this._detect(x, opts)));
+        if (YandexTranslate.isStringArray(text)) {
+            return await Promise.all(text.map((x) => {
+                return this._detect(x, opts)
+                    .then((lang) => ({ lang } as IMultipleDetectResult))
+                    .catch((error) => ({ error } as IMultipleDetectResult));
+            })) as U;
         } else {
-            return this._detect(text as string, opts);
+            return await this._detect(text as string, opts) as U;
         }
-    }
-
-    public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse> {
-        const data = await this.request<IGetLangsResponse | IResponseRejected>('getLangs', opts);
-        if (!data || ('code' in data && (data as IResponseRejected).code !== 200)) {
-            throw new YandexTranslateError(data as IResponseRejected);
-        }
-
-        return data as IGetLangsResponse;
     }
 
     protected async _detect(text: string, opts?: IDetectOptions): Promise<string> {
@@ -116,15 +124,34 @@ class YandexTranslate {
         return data.lang as string;
     }
 
-    protected async request<T>(endpoint: string, params?: object): Promise<T> {
-        const { data }: { data: T } = await this.client.post(endpoint, { key: this.apiKey, ...params });
-        return data;
+    public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse> {
+        const data = await this.request<IGetLangsResponse | IResponseRejected>('getLangs', opts);
+        if (!data || ('code' in data && (data as IResponseRejected).code !== 200)) {
+            throw new YandexTranslateError(data as IResponseRejected);
+        }
+
+        return data as IGetLangsResponse;
     }
 
-    protected static initClient(): AxiosInstance {
+    protected get client(): AxiosInstance {
+        return this._client || (this._client = YandexTranslate.makeClient());
+    }
+
+    protected get queue(): PQueue {
+        return this._queue || (this._queue = YandexTranslate.makeQueue());
+    }
+
+    protected async request<T>(endpoint: string, params?: object): Promise<T> {
+        return this.queue.add(async (): Promise<T> => {
+            const { data }: { data: T } = await this.client.post(endpoint, { key: this.apiKey, ...params });
+            return data;
+        });
+    }
+
+    protected static makeClient(): AxiosInstance {
         const client = axios.create({
             baseURL: YandexTranslate.baseURL,
-            timeout: 30 * 1000,
+            timeout: YandexTranslate.timeout,
             headers: {
                 'User-Agent': 'YetAnotherYandexTranslateClient',
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -153,6 +180,10 @@ class YandexTranslate {
         return client;
     }
 
+    protected static makeQueue(): PQueue {
+        return new PQueue({concurrency: YandexTranslate.concurrency});
+    }
+
     protected static isValid(x: any): boolean {
         if (typeof x === 'string' || x === null || x === undefined) {
             return true;
@@ -164,7 +195,7 @@ class YandexTranslate {
         if (Array.isArray(x)) {
             return !x.some((xx) => !YandexTranslate.isEmpty(xx));
         } else {
-            return x === null || x === undefined || !/\S/.test(x);
+            return x === null || x === undefined || (typeof x === 'string' && !/\S/.test(x));
         }
     }
 
