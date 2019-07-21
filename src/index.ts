@@ -80,20 +80,18 @@ class YandexTranslate {
         return (Array.isArray(text) ? outputText : outputText[0]) as T;
     }
 
-    public async detect(text: string, opts?: IDetectOptions): Promise<string> {
+    public async detect(text: string, opts?: IDetectOptions): Promise<string>;
+    public async detect(text: string[], opts?: IDetectOptions): Promise<string[]>;
+    public async detect<T extends string | string[]>(text: T, opts?: IDetectOptions): Promise<string | string[]> {
         if (!YandexTranslate.isValid(text)) {
             throw new YandexTranslateError('INVALID_PARAM');
         }
-        if (YandexTranslate.isEmpty(text)) {
-            return;
-        }
 
-        const data = await this.request<IDetectResponse | IResponseRejected>('detect', { text, ...opts });
-        if (!data || ('code' in data && data.code !== 200) || !('lang' in data)) {
-            throw new YandexTranslateError(data);
+        if (YandexTranslate.isStringArray(text)) { // <- плохо
+            return Promise.all(text.map((x) => this._detect(x, opts)));
+        } else {
+            return this._detect(text as string, opts);
         }
-
-        return data.lang;
     }
 
     public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse> {
@@ -103,6 +101,19 @@ class YandexTranslate {
         }
 
         return data as IGetLangsResponse;
+    }
+
+    protected async _detect(text: string, opts?: IDetectOptions): Promise<string> {
+        if (YandexTranslate.isEmpty(text)) {
+            return;
+        }
+
+        const data = await this.request<IDetectResponse | IResponseRejected>('detect', { text, ...opts });
+        if (!data || ('code' in data && data.code !== 200) || !('lang' in data)) {
+            throw new YandexTranslateError(data);
+        }
+
+        return data.lang as string;
     }
 
     protected async request<T>(endpoint: string, params?: object): Promise<T> {
@@ -146,10 +157,7 @@ class YandexTranslate {
         if (typeof x === 'string' || x === null || x === undefined) {
             return true;
         }
-        if (Array.isArray(x)) {
-            return !x.some((o) => !(typeof o === 'string' || o === null || o === undefined));
-        }
-        return false;
+        return YandexTranslate.isStringArray(x);
     }
 
     protected static isEmpty(x: string | string[]): boolean {
@@ -158,6 +166,10 @@ class YandexTranslate {
         } else {
             return x === null || x === undefined || !/\S/.test(x);
         }
+    }
+
+    protected static isStringArray(x: any): x is string[] {
+        return Array.isArray(x) && !x.some((o) => !(typeof o === 'string' || o === null || o === undefined));
     }
 }
 

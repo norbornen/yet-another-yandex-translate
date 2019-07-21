@@ -82,12 +82,16 @@ test('#detect', async () => {
     await expect(yt.detect(undefined)).resolves.toEqual(undefined);
 });
 
+test('#detect-array', async () => {
+    let z: any = await yt.detect(['expect', 'переводчик', 'merci']);
+    console.log(z);
+    z = await yt.detect('merci');
+    console.log(z);
+});
+
 test('#detect-err', async () => {
     expect.assertions(1);
     await expect(yt.detect({} as unknown as string)).rejects.toThrow(YandexTranslateError);
-});
-
-test('#detect-array', async () => {
 });
 
 test('#getLangs', async () => {
