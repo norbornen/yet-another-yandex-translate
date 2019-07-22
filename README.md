@@ -51,13 +51,14 @@ await yt.getLangs();
 await yt.getLangs({ui: 'en'}); // {dirs: [], langs: {}}
 ```
 
-## List of supported languages.
-
-https://yandex.ru/dev/translate/doc/dg/concepts/api-overview-docpage/#api-overview__languages
-
 ## Bugs and features
 
 Please file in GitHub.
+
+## Yandex Translate
+
+[demo](https://translate.yandex.com/) | [docs](https://tech.yandex.com/translate/) | [API Key](https://translate.yandex.com/developers/keys)) | [List of supported languages](https://yandex.ru/dev/translate/doc/dg/concepts/api-overview-docpage/#api-overview__languages)
+
 
 [1]: https://npmjs.org/package/yet-another-yandex-translate
 [2]: http://versionbadg.es/norbornen/yet-another-yandex-translate.svg
