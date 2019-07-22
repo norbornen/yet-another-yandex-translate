@@ -3,6 +3,12 @@ import PQueue from 'p-queue';
 import YandexTranslateError from './error';
 import stringify from './tools/stringify';
 
+interface IResponseRejected {
+    code: number;
+    message: string;
+}
+
+// -
 enum ETranslateFormat {
     html = 'html',
     plain = 'plain'
@@ -10,27 +16,17 @@ enum ETranslateFormat {
 
 type TranslateFormat = keyof typeof ETranslateFormat;
 
-interface ITranslateOneDirectionOptions {
+interface ITranslateOptions {
     from?: string;
+    format?: TranslateFormat;
+}
+
+interface ITranslateOneDirectionOptions extends ITranslateOptions {
     to: string;
-    format?: TranslateFormat;
 }
 
-interface ITranslateMultiDirectionOptions {
-    from?: string;
+interface ITranslateMultiDirectionOptions extends ITranslateOptions {
     to: string[];
-    format?: TranslateFormat;
-}
-
-
-
-interface IGetLangsOptions {
-    ui?: string;
-}
-
-interface IResponseRejected {
-    code: number;
-    message: string;
 }
 
 interface ITranslateResponse {
@@ -39,11 +35,24 @@ interface ITranslateResponse {
     text: string[];
 }
 
+interface IMultipleTranslateResult<T extends string | string[]> {
+    text: T;
+    error?: Error;
+}
+
+type TranslationResult<U extends ITranslateOneDirectionOptions | ITranslateMultiDirectionOptions, T extends string | string[]> = U extends ITranslateMultiDirectionOptions ? IMultipleTranslateResult<T>[] : T;
+
+// -
+interface IGetLangsOptions {
+    ui?: string;
+}
+
 interface IGetLangsResponse {
     dirs: string[];
     langs?: {[key: string]: string};
 }
 
+// -
 interface IDetectOptions {
     hint?: string;
 }
@@ -73,14 +82,31 @@ class YandexTranslate {
 
     public async translate(text: string, opts: ITranslateOneDirectionOptions): Promise<string>;
     public async translate(text: string[], opts: ITranslateOneDirectionOptions): Promise<string[]>;
-    public async translate<T extends string | string[]>(text: T, opts: ITranslateOneDirectionOptions): Promise<T> {
-        if (!YandexTranslate.isValid(text) || !opts) {
+    public async translate(text: string, opts: ITranslateMultiDirectionOptions): Promise<IMultipleTranslateResult<string>>;
+    public async translate(text: string[], opts: ITranslateMultiDirectionOptions): Promise<IMultipleTranslateResult<string[]>>;
+    public async translate<T extends string | string[], U extends ITranslateOneDirectionOptions | ITranslateMultiDirectionOptions, O extends TranslationResult<U, T>>(
+        text: T,
+        opts: U
+    ): Promise<O> {
+        if (!YandexTranslate.isValid(text) || !opts || !opts.to || (Array.isArray(opts.to) && !YandexTranslate.isStringArray(opts.to))) {
             throw new YandexTranslateError('INVALID_PARAM');
         }
-        if (YandexTranslate.isEmpty(text) || !opts.to) {
-            return text; // empty string -> empty string; empty array -> empty array, null -> null
+        if (YandexTranslate.isEmpty(text)) {
+            return;
         }
 
+        if (YandexTranslate.isStringArray(opts.to)) {
+            return await Promise.all(opts.to.map((to) => {
+                return this._translate(text, Object.assign(opts, { to }))
+                    .then((outputText) => ({ text: outputText, lang: to } as IMultipleTranslateResult<T>))
+                    .catch((error) => ({ error } as IMultipleTranslateResult<T>));
+            })) as O;
+        } else {
+            return await this._translate(text, opts as ITranslateOneDirectionOptions) as O;
+        }
+    }
+
+    protected async _translate<T extends string | string[]>(text: T, opts: ITranslateOneDirectionOptions): Promise<T> {
         const lang = opts.to && opts.from ? `${opts.from}-${opts.to}` : opts.to;
         const format = opts.format || ETranslateFormat.plain;
 
