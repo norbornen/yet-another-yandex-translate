@@ -57,7 +57,7 @@ Please file in GitHub.
 
 ## Yandex Translate
 
-[demo](https://translate.yandex.com/) | [docs](https://tech.yandex.com/translate/) | [API Key](https://translate.yandex.com/developers/keys)) | [List of supported languages](https://yandex.ru/dev/translate/doc/dg/concepts/api-overview-docpage/#api-overview__languages)
+[Demo](https://translate.yandex.com/) | [Docs](https://tech.yandex.com/translate/) | [API Key](https://translate.yandex.com/developers/keys) | [List of supported languages](https://yandex.ru/dev/translate/doc/dg/concepts/api-overview-docpage/#api-overview__languages)
 
 
 [1]: https://npmjs.org/package/yet-another-yandex-translate
