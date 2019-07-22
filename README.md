@@ -24,15 +24,31 @@ const yt = new YandexTranslate('<< YOUR YANDEX API KEY HERE >>');
 
 const text = 'Привет мир!';
 
-await yt.translate(text, {from: 'ru', to: 'en', format: 'html'}); // Hello world!
-await yt.translate([ text, text ], {to: 'fr', format: 'plain'}); // [ 'Bonjour tout le monde!', 'Bonjour tout le monde!' ]
+// Hello world!
+await yt.translate(text, {from: 'ru', to: 'en', format: 'html'});
 
-await yt.detect(text);                            // ru
-await yt.detect(text, {hint: 'en,fr'});           // ru
-await yt.detect(['Привет мир!', 'Hello world!']); // [{lang: 'ru'}, {lang: 'en'}]
+// [ 'Hello world!', 'Hello world!' ]
+await yt.translate([ text, text ], {to: 'en', format: 'plain'});
+
+// [{text: 'Hello world!', lang: 'en'}, {text: 'Bonjour tout le monde!', lang: 'fr'}]
+await yt.translate('Привет мир!', {to: ['en', 'fr']});
+
+// [{text: ['Hello world!', 'Hello world!'], lang: 'en'}, {text: ['Bonjour tout le monde!', 'Bonjour tout le monde!'], lang: 'fr'}]
+await yt.translate(['Привет мир!', 'Привет мир!'], {to: ['en', 'fr']});   
+
+
+// ru
+await yt.detect(text);
+
+// ru
+await yt.detect(text, {hint: 'en,fr'});
+
+// [{lang: 'ru'}, {lang: 'en'}]
+await yt.detect(['Привет мир!', 'Hello world!']); 
+
 
 await yt.getLangs();
-await yt.getLangs({ui: 'en'});            // {dirs: [], langs: {}}
+await yt.getLangs({ui: 'en'}); // {dirs: [], langs: {}}
 ```
 
 ## List of supported languages.
