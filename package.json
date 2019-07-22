@@ -1,6 +1,6 @@
 {
   "name": "yet-another-yandex-translate",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Yet another Yandex.Translate service client",
   "main": "dist/index.js",
   "types": "dist",
@@ -12,8 +12,8 @@
     "postversion": "git push && git push --tags"
   },
   "files": [
-		"dist"
-	],
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/norbornen/yet-another-yandex-translate.git"
