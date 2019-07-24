@@ -1,7 +1,6 @@
-import axios, { AxiosRequestConfig, AxiosInstance } from 'axios';
 import PQueue from 'p-queue';
 import YandexTranslateError from './error';
-import stringify from './tools/stringify';
+import createHttpAgent from './tools/agent';
 
 interface IResponseRejected {
     code: number;
@@ -74,7 +73,7 @@ class YandexTranslate {
     protected static baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
     protected static timeout: number = 30 * 1000;
     protected static concurrency: number = 10;
-    protected _client: AxiosInstance;
+    protected _client;
     protected _queue: PQueue;
 
     constructor(protected apiKey: string) {
@@ -159,12 +158,18 @@ class YandexTranslate {
         return data as IGetLangsResponse;
     }
 
-    protected get client(): AxiosInstance {
-        return this._client || (this._client = YandexTranslate.makeClient());
+    protected get client() {
+        if (!this._client) {
+            this._client = createHttpAgent(YandexTranslate.baseURL, YandexTranslate.timeout);
+        }
+        return this._client;
     }
 
     protected get queue(): PQueue {
-        return this._queue || (this._queue = YandexTranslate.makeQueue());
+        if (!this._queue) {
+            this._queue = new PQueue({concurrency: YandexTranslate.concurrency});
+        }
+        return this._queue;
     }
 
     protected async request<T>(endpoint: string, params?: object): Promise<T> {
@@ -172,42 +177,6 @@ class YandexTranslate {
             const { data }: { data: T } = await this.client.post(endpoint, { key: this.apiKey, ...params });
             return data;
         });
-    }
-
-    protected static makeClient(): AxiosInstance {
-        const client = axios.create({
-            baseURL: YandexTranslate.baseURL,
-            timeout: YandexTranslate.timeout,
-            headers: {
-                'User-Agent': 'YetAnotherYandexTranslateClient',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept-Encoding': 'gzip, deflate, br'
-            }
-        } as AxiosRequestConfig);
-
-        client.interceptors.request.use((request: AxiosRequestConfig) => {
-            if (request.headers['Content-Type'] === 'application/x-www-form-urlencoded' && request.data) {
-                request.data = stringify(request.data);
-            }
-            return request;
-        });
-
-        client.interceptors.response.use(
-            undefined,
-            (err) => {
-                if ('response' in err && err.response && 'data' in err.response) {
-                    console.error('An error occured while translating: ', err.response.data);
-                    throw new YandexTranslateError(err.response.data);
-                }
-                console.error('An error occured while translating: ', err);
-                throw err;
-            }
-        );
-        return client;
-    }
-
-    protected static makeQueue(): PQueue {
-        return new PQueue({concurrency: YandexTranslate.concurrency});
     }
 
     protected static isValid(x: any): boolean {
