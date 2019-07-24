@@ -17,7 +17,7 @@ Yet another Yandex.Translate service client
 
 ## Usage
 
-```javascript
+```typescript
 import YandexTranslate from 'yet-another-yandex-translate';
 
 const yt = new YandexTranslate('<< YOUR YANDEX API KEY HERE >>');
@@ -31,10 +31,10 @@ await yt.translate(text, {from: 'ru', to: 'en', format: 'html'});
 await yt.translate([ text, text ], {to: 'en', format: 'plain'});
 
 // [{text: 'Hello world!', lang: 'en'}, {text: 'Bonjour tout le monde!', lang: 'fr'}]
-await yt.translate('Привет мир!', {to: ['en', 'fr']});
+await yt.translate(text, {to: ['en', 'fr']});
 
 // [{text: ['Hello world!', 'Hello world!'], lang: 'en'}, {text: ['Bonjour tout le monde!', 'Bonjour tout le monde!'], lang: 'fr'}]
-await yt.translate(['Привет мир!', 'Привет мир!'], {to: ['en', 'fr']});   
+await yt.translate([text, text], {to: ['en', 'fr']});   
 
 
 // ru
@@ -50,10 +50,6 @@ await yt.detect(['Привет мир!', 'Hello world!']);
 await yt.getLangs();
 await yt.getLangs({ui: 'en'}); // {dirs: [], langs: {}}
 ```
-
-## Bugs and features
-
-Please file in GitHub.
 
 ## Yandex Translate
 
