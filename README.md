@@ -1,6 +1,6 @@
 # yet-another-yandex-translate <sup>[![Version Badge][2]][1]</sup>
 
-[![Coverage Status](https://coveralls.io/repos/github/norbornen/yet-another-yandex-translate/badge.svg?branch=master)](https://coveralls.io/github/norbornen/yet-another-yandex-translate?branch=master)
+[![Build Status](https://travis-ci.org/norbornen/yet-another-yandex-translate.svg?branch=master)](https://travis-ci.org/norbornen/yet-another-yandex-translate)
 [![dependency status][5]][6]
 [![dev dependency status][7]][8]
 [![Greenkeeper badge](https://badges.greenkeeper.io/norbornen/yet-another-yandex-translate.svg)](https://greenkeeper.io/)
