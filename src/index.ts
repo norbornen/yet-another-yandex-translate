@@ -1,7 +1,10 @@
-import PQueue from 'p-queue';
+import PQueue, { Queue, Options, QueueAddOptions } from 'p-queue';
 import { AxiosInstance } from 'axios';
 import YandexTranslateError from './error';
 import createHttpAgent from './tools/agent';
+
+interface IYandexTranslateQueueOptions extends Options<Queue<QueueAddOptions>, QueueAddOptions> {
+}
 
 interface IResponseRejected {
     code: number;
@@ -72,13 +75,14 @@ type DetectionResult<T> = T extends string[] ? IMultipleDetectResult[] : string;
 
 class YandexTranslate {
     protected static baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
-    protected static timeout: number = 30 * 1000;
-    protected static concurrency: number = 10;
+    protected static timeout: number = 40 * 1000;
     protected _client: AxiosInstance;
     protected _queue: PQueue;
 
-    constructor(protected apiKey: string) {
-    }
+    constructor(
+        protected apiKey: string,
+        protected queue_options: false | IYandexTranslateQueueOptions = {concurrency: 4}
+    ) {}
 
     public async translate(text: string, opts: ITranslateOneDirectionOptions): Promise<string>;
     public async translate(text: string[], opts: ITranslateOneDirectionOptions): Promise<string[]>;
@@ -168,7 +172,8 @@ class YandexTranslate {
 
     protected get queue(): PQueue {
         if (!this._queue) {
-            this._queue = new PQueue({concurrency: YandexTranslate.concurrency});
+            const queue_options: IYandexTranslateQueueOptions = this.queue_options || { concurrency: Infinity };
+            this._queue = new PQueue(queue_options);
         }
         return this._queue;
     }
