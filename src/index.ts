@@ -151,12 +151,12 @@ class YandexTranslate {
             throw new YandexTranslateError(data);
         }
 
-        return data.lang as string;
+        return data.lang;
     }
 
     public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse> {
         const data = await this.request<IGetLangsResponse | IResponseRejected>('getLangs', opts);
-        if (!data || ('code' in data && (data as IResponseRejected).code !== 200)) {
+        if (!data || ('code' in data && data.code !== 200)) {
             throw new YandexTranslateError(data as IResponseRejected);
         }
 
