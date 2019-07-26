@@ -1,4 +1,4 @@
-interface YandexTranslateErrorReason {
+interface IYandexTranslateErrorReason {
     code: number;
     message?: string;
 }
@@ -6,7 +6,7 @@ interface YandexTranslateErrorReason {
 class YandexTranslateError extends Error {
     public code?: number;
 
-    constructor(reason: YandexTranslateErrorReason | string) {
+    constructor(reason: IYandexTranslateErrorReason | string) {
         if (typeof reason === 'string') {
             super(reason);
         } else {
