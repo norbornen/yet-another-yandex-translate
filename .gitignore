@@ -30,3 +30,4 @@ node_modules/
 .yarn-integrity
 
 dist
+.idea
