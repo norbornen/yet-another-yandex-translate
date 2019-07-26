@@ -43,7 +43,7 @@ interface IMultipleTranslateResult<T extends string | string[]> {
     error?: Error;
 }
 
-type TranslationResult<U extends ITranslateOneDirectionOptions | ITranslateMultiDirectionOptions, T extends string | string[]> = U extends ITranslateMultiDirectionOptions ? IMultipleTranslateResult<T>[] : T;
+type TranslationResult<U extends ITranslateOneDirectionOptions | ITranslateMultiDirectionOptions, T extends string | string[]> = U extends ITranslateMultiDirectionOptions ? Array<IMultipleTranslateResult<T>> : T;
 
 // -
 interface IGetLangsOptions {
