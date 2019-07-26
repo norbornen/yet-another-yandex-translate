@@ -1,4 +1,5 @@
 import PQueue from 'p-queue';
+import { AxiosInstance } from 'axios';
 import YandexTranslateError from './error';
 import createHttpAgent from './tools/agent';
 
@@ -73,7 +74,7 @@ class YandexTranslate {
     protected static baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
     protected static timeout: number = 30 * 1000;
     protected static concurrency: number = 10;
-    protected _client;
+    protected _client: AxiosInstance;
     protected _queue: PQueue;
 
     constructor(protected apiKey: string) {
@@ -158,7 +159,7 @@ class YandexTranslate {
         return data as IGetLangsResponse;
     }
 
-    protected get client() {
+    protected get client(): AxiosInstance {
         if (!this._client) {
             this._client = createHttpAgent(YandexTranslate.baseURL, YandexTranslate.timeout);
         }
