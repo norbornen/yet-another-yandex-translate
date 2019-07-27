@@ -17,38 +17,50 @@ Yet another Yandex.Translate service client
 
 ## Usage
 
+###### Nodejs require
+```javascript
+const { YandexTranslate } = require('yet-another-yandex-translate');
+```
+
+###### Typescript import
 ```typescript
 import YandexTranslate from 'yet-another-yandex-translate';
+```
 
+
+```typescript
 const yt = new YandexTranslate('<< YOUR YANDEX API KEY HERE >>');
 
 const text = 'Привет мир!';
 
-// Hello world!
-await yt.translate(text, {from: 'ru', to: 'en', format: 'html'});
+(async () => {
+        // Hello world!
+        await yt.translate(text, {from: 'ru', to: 'en', format: 'html'});
 
-// [ 'Hello world!', 'Hello world!' ]
-await yt.translate([ text, text ], {to: 'en', format: 'plain'});
+        // [ 'Hello world!', 'Hello world!' ]
+        await yt.translate([ text, text ], {to: 'en', format: 'plain'});
 
-// [{text: 'Hello world!', lang: 'en'}, {text: 'Bonjour tout le monde!', lang: 'fr'}]
-await yt.translate(text, {to: ['en', 'fr']});
+        // [{text: 'Hello world!', lang: 'en'}, {text: 'Bonjour tout le monde!', lang: 'fr'}]
+        await yt.translate(text, {to: ['en', 'fr']});
 
-// [{text: ['Hello world!', 'Hello world!'], lang: 'en'}, {text: ['Bonjour tout le monde!', 'Bonjour tout le monde!'], lang: 'fr'}]
-await yt.translate([text, text], {to: ['en', 'fr']});   
-
-
-// ru
-await yt.detect(text);
-
-// ru
-await yt.detect(text, {hint: 'en,fr'});
-
-// [{lang: 'ru'}, {lang: 'en'}]
-await yt.detect(['Привет мир!', 'Hello world!']); 
+        // [{text: ['Hello world!', 'Hello world!'], lang: 'en'}, {text: ['Bonjour tout le monde!', 'Bonjour tout le monde!'], lang: 'fr'}]
+        await yt.translate([text, text], {to: ['en', 'fr']});   
 
 
-await yt.getLangs();
-await yt.getLangs({ui: 'en'}); // {dirs: [], langs: {}}
+        // ru
+        await yt.detect(text);
+
+        // ru
+        await yt.detect(text, {hint: 'en,fr'});
+
+        // [{lang: 'ru'}, {lang: 'en'}]
+        await yt.detect(['Привет мир!', 'Hello world!']); 
+
+
+        await yt.getLangs();
+        await yt.getLangs({ui: 'en'}); // {dirs: [], langs: {}}
+})();
+
 ```
 
 ## Yandex Translate
