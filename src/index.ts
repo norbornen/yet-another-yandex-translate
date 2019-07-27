@@ -73,7 +73,7 @@ interface IMultipleDetectResult {
 type DetectionResult<T> = T extends string[] ? IMultipleDetectResult[] : string;
 
 
-class YandexTranslate {
+export default class YandexTranslate {
     protected static baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
     protected static timeout: number = 40 * 1000;
     protected _client: AxiosInstance;
@@ -205,4 +205,4 @@ class YandexTranslate {
     }
 }
 
-export default YandexTranslate;
+export { YandexTranslate };
