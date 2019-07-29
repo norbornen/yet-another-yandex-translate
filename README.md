@@ -1,8 +1,7 @@
-# yet-another-yandex-translate <sup>[![Version Badge][2]][1]</sup>
+# yet-another-yandex-translate
 
 [![Build Status](https://travis-ci.org/norbornen/yet-another-yandex-translate.svg?branch=master)](https://travis-ci.org/norbornen/yet-another-yandex-translate)
-[![dependency status][5]][6]
-[![dev dependency status][7]][8]
+[![dependency status][1]][2]
 [![Greenkeeper badge](https://badges.greenkeeper.io/norbornen/yet-another-yandex-translate.svg)](https://greenkeeper.io/)
 
 Yet another Yandex.Translate service client
@@ -11,7 +10,7 @@ Yet another Yandex.Translate service client
 
 1.  Sign up for a Yandex API key at https://translate.yandex.com/developers/keys
 
-2.  Install this package in your project:
+2.  Install this [package](https://npmjs.org/package/yet-another-yandex-translate) in your project:
 
         $ npm install --save yet-another-yandex-translate
 
@@ -70,9 +69,6 @@ const text = 'Привет мир!';
 [Demo](https://translate.yandex.com/) | [Docs](https://tech.yandex.com/translate/) | [List of supported languages](https://yandex.ru/dev/translate/doc/dg/concepts/api-overview-docpage/#api-overview__languages) | [API Key](https://translate.yandex.com/developers/keys) | [Statistics](https://translate.yandex.com/developers/stat)
 
 
-[1]: https://npmjs.org/package/yet-another-yandex-translate
-[2]: http://versionbadg.es/norbornen/yet-another-yandex-translate.svg
-[5]: https://david-dm.org/norbornen/yet-another-yandex-translate.svg
-[6]: https://david-dm.org/norbornen/yet-another-yandex-translate
-[7]: https://david-dm.org/norbornen/yet-another-yandex-translate/dev-status.svg
-[8]: https://david-dm.org/norbornen/yet-another-yandex-translate?type=dev
+[1]: https://david-dm.org/norbornen/yet-another-yandex-translate.svg
+[2]: https://david-dm.org/norbornen/yet-another-yandex-translate
+
