@@ -3,7 +3,7 @@ interface IYandexTranslateErrorReason {
     message?: string;
 }
 
-class YandexTranslateError extends Error {
+export default class YandexTranslateError extends Error {
     public code?: number;
 
     constructor(reason: IYandexTranslateErrorReason | string) {
@@ -18,4 +18,4 @@ class YandexTranslateError extends Error {
     }
 }
 
-export default YandexTranslateError;
+export { YandexTranslateError };
