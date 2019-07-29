@@ -9,6 +9,7 @@
     "prepublishOnly": "yarn build",
     "tslint": "tslint -p tsconfig.json -c tslint.json",
     "test": "jest --verbose",
+    "test:coverage": "jest --verbose --coverage",
     "postversion": "git push && git push --tags"
   },
   "files": [

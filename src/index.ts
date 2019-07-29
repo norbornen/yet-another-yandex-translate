@@ -113,13 +113,7 @@ export default class YandexTranslate {
     protected async _translate<T extends string | string[]>(text: T, opts: ITranslateOneDirectionOptions): Promise<T> {
         const lang = opts.to && opts.from ? `${opts.from}-${opts.to}` : opts.to;
         const format = opts.format || ETranslateFormat.plain;
-
-        const data = await this.request<ITranslateResponse | IResponseRejected>('translate', { lang, text, format });
-        if (!data || ('code' in data && data.code !== 200) || !('text' in data)) {
-            throw new YandexTranslateError(data);
-        }
-
-        const outputText = data.text;
+        const { text: outputText } = await this.request<ITranslateResponse>('translate', { lang, text, format });
         return (YandexTranslate.isStringArray(text) ? outputText : outputText[0]) as T;
     }
 
@@ -145,22 +139,12 @@ export default class YandexTranslate {
         if (YandexTranslate.isEmpty(text)) {
             return;
         }
-
-        const data = await this.request<IDetectResponse | IResponseRejected>('detect', { text, ...opts });
-        if (!data || ('code' in data && data.code !== 200) || !('lang' in data)) {
-            throw new YandexTranslateError(data);
-        }
-
-        return data.lang;
+        const { lang } = await this.request<IDetectResponse>('detect', { text, ...opts });
+        return lang;
     }
 
     public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse> {
-        const data = await this.request<IGetLangsResponse | IResponseRejected>('getLangs', opts);
-        if (!data || ('code' in data && data.code !== 200)) {
-            throw new YandexTranslateError(data as IResponseRejected);
-        }
-
-        return data as IGetLangsResponse;
+        return this.request<IGetLangsResponse>('getLangs', opts);
     }
 
     protected get client(): AxiosInstance {
@@ -180,8 +164,28 @@ export default class YandexTranslate {
 
     protected async request<T>(endpoint: string, params?: object): Promise<T> {
         return this.queue.add(async (): Promise<T> => {
-            const { data }: { data: T } = await this.client.post(endpoint, { key: this.apiKey, ...params });
-            return data;
+            try {
+                params = { key: this.apiKey, ...params };
+                const { data }: { data?: T | IResponseRejected } = await this.client.post(endpoint, params);
+
+                if (!data) {
+                    throw new YandexTranslateError('EMPTY_DATA');
+                }
+                if ('code' in data && (data as IResponseRejected).code !== 200) {
+                    throw new YandexTranslateError(data);
+                }
+
+                return data as T;
+            } catch (err) {
+                if (!(err instanceof YandexTranslateError)) {
+                    const err_data = 'response' in err && err.response && 'data' in err.response && err.response.data;
+                    if (err_data) {
+                        err = new YandexTranslateError(err_data);
+                    }
+                    console.error('An error occured while translating:', err_data || err);
+                }
+                throw(err);
+            }
         });
     }
 
