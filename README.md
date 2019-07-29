@@ -14,19 +14,21 @@ Yet another Yandex.Translate service client
 
         $ npm install --save yet-another-yandex-translate
 
-## Usage
+## Adding to your project
 
-###### Nodejs require
-```javascript
+### In Node.js
+
+Call require to get the instance:
+```js
 const { YandexTranslate } = require('yet-another-yandex-translate');
 ```
 
-###### Typescript import
+Or in ES6 and TS:
 ```typescript
 import YandexTranslate from 'yet-another-yandex-translate';
 ```
 
-
+## Usage
 ```typescript
 const yt = new YandexTranslate('<< YOUR YANDEX API KEY HERE >>');
 
