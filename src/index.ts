@@ -3,92 +3,76 @@ import { AxiosInstance } from 'axios';
 import YandexTranslateError from './error';
 import createHttpAgent from './tools/agent';
 
-interface IYandexTranslateQueueOptions extends Options<Queue<QueueAddOptions>, QueueAddOptions> {
-}
+// --
+type PQueueOptions = Options<Queue<QueueAddOptions>, QueueAddOptions>;
 
-interface IResponseRejected {
-    code: number;
-    message: string;
-}
-
-// -
-enum ETranslateFormat {
+// -- options
+enum TranslateFormat {
     html = 'html',
     plain = 'plain'
 }
 
-type TranslateFormat = keyof typeof ETranslateFormat;
+type OptionsTranslate = {
+    to: string,
+    from?: string,
+    format?: keyof typeof TranslateFormat;
+};
 
-interface ITranslateOptions {
-    from?: string;
-    format?: TranslateFormat;
+type OptionsTranslateMulti = Omit<OptionsTranslate, 'to'> & {to: string[]};
+
+type OptionsGetLangs = {
+    ui?: string;
+};
+
+type OptionsDetect = {
+    hint?: string;
+};
+
+// -- responses
+interface BaseResponse {
+    readonly code: number;
 }
-
-interface ITranslateOneDirectionOptions extends ITranslateOptions {
-    to: string;
+interface ErrorResponse extends BaseResponse {
+    message: string;
 }
-
-interface ITranslateMultiDirectionOptions extends ITranslateOptions {
-    to: string[];
-}
-
-interface ITranslateResponse {
-    code: number;
+interface TranslateResponse extends BaseResponse {
     lang: string;
     text: string[];
 }
-
-interface IMultipleTranslateResult<T extends string | string[]> {
-    text: T;
-    error?: Error;
+interface DetectResponse extends BaseResponse {
+    lang: string;
 }
-
-type TranslationResult<U extends ITranslateOneDirectionOptions | ITranslateMultiDirectionOptions, T extends string | string[]> = U extends ITranslateMultiDirectionOptions ? Array<IMultipleTranslateResult<T>> : T;
-
-// -
-interface IGetLangsOptions {
-    ui?: string;
-}
-
-interface IGetLangsResponse {
+interface GetLangsResponse extends Partial<BaseResponse> {
     dirs: string[];
     langs?: {[key: string]: string};
 }
 
-// -
-interface IDetectOptions {
-    hint?: string;
-}
+// -- results
+type MultiTranslationPart<T extends string | string[]> = { text: T, lang?: string };
+type MultiTranslationPartError = { error: Error };
+type TranslationResult<U extends OptionsTranslate | OptionsTranslateMulti, T extends string | string[]> = U extends OptionsTranslateMulti ? Array<MultiTranslationPart<T> | MultiTranslationPartError> : T;
 
-interface IDetectResponse {
-    code: number;
-    lang: string;
-}
-
-interface IMultipleDetectResult {
-    lang: string;
-    error?: Error;
-}
-
-type DetectionResult<T> = T extends string[] ? IMultipleDetectResult[] : string;
+type MultiDetectPart = { lang: string };
+type MultiDetectPartError = { error: Error };
+type DetectionResult<T> = T extends string[] ? Array<MultiDetectPart | MultiDetectPartError> : string;
 
 
 export default class YandexTranslate {
-    protected static baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
-    protected static timeout: number = 40 * 1000;
+    protected baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
+    protected timeout: number = 40 * 1000;
     protected _client: AxiosInstance;
     protected _queue: PQueue;
 
     constructor(
         protected apiKey: string,
-        protected queue_options: false | IYandexTranslateQueueOptions = {concurrency: 4}
+        protected queue_options: false | PQueueOptions = {concurrency: 4}
     ) {}
 
-    public async translate(text: string, opts: ITranslateOneDirectionOptions): Promise<string>;
-    public async translate(text: string[], opts: ITranslateOneDirectionOptions): Promise<string[]>;
-    public async translate(text: string, opts: ITranslateMultiDirectionOptions): Promise<IMultipleTranslateResult<string>>;
-    public async translate(text: string[], opts: ITranslateMultiDirectionOptions): Promise<IMultipleTranslateResult<string[]>>;
-    public async translate<T extends string | string[], U extends ITranslateOneDirectionOptions | ITranslateMultiDirectionOptions, O extends TranslationResult<U, T>>(
+    public async translate(text: string, opts: OptionsTranslate): Promise<TranslationResult<OptionsTranslate, string>>;
+    public async translate(text: string[], opts: OptionsTranslate): Promise<TranslationResult<OptionsTranslate, string[]>>;
+    public async translate(text: string, opts: OptionsTranslateMulti): Promise<TranslationResult<OptionsTranslateMulti, string>>;
+    public async translate(text: string[], opts: OptionsTranslateMulti): Promise<TranslationResult<OptionsTranslateMulti, string[]>>;
+    public async translate<T extends string | string[], U extends OptionsTranslate | OptionsTranslateMulti, O extends TranslationResult<U, T>>(
         text: T,
         opts: U
     ): Promise<O> {
@@ -102,24 +86,24 @@ export default class YandexTranslate {
         if (YandexTranslate.isStringArray(opts.to)) {
             return await Promise.all(opts.to.map((to) => {
                 return this._translate(text, Object.assign(opts, { to }))
-                    .then((outputText) => ({ text: outputText, lang: to } as IMultipleTranslateResult<T>))
-                    .catch((error) => ({ error } as IMultipleTranslateResult<T>));
+                    .then((outputText) => ({ text: outputText, lang: to } as MultiTranslationPart<T>))
+                    .catch((error) => ({ error } as MultiTranslationPartError));
             })) as O;
         } else {
-            return await this._translate(text, opts as ITranslateOneDirectionOptions) as O;
+            return await this._translate(text, opts as OptionsTranslate) as O;
         }
     }
 
-    protected async _translate<T extends string | string[]>(text: T, opts: ITranslateOneDirectionOptions): Promise<T> {
+    protected async _translate<T extends string | string[]>(text: T, opts: OptionsTranslate): Promise<T> {
         const lang = opts.to && opts.from ? `${opts.from}-${opts.to}` : opts.to;
-        const format = opts.format || ETranslateFormat.plain;
-        const { text: outputText } = await this.request<ITranslateResponse>('translate', { lang, text, format });
+        const format = opts.format || TranslateFormat.plain;
+        const { text: outputText } = await this.request<TranslateResponse>('translate', { lang, text, format });
         return (YandexTranslate.isStringArray(text) ? outputText : outputText[0]) as T;
     }
 
-    public async detect(text: string, opts?: IDetectOptions): Promise<string>;
-    public async detect(text: string[], opts?: IDetectOptions): Promise<IMultipleDetectResult[]>;
-    public async detect<T extends string | string[], U extends DetectionResult<T>>(text: T, opts?: IDetectOptions): Promise<U> {
+    public async detect(text: string, opts?: OptionsDetect): Promise<string>;
+    public async detect(text: string[], opts?: OptionsDetect): Promise<DetectionResult<string[]>>;
+    public async detect<T extends string | string[], U extends DetectionResult<T>>(text: T, opts?: OptionsDetect): Promise<U> {
         if (!YandexTranslate.isValid(text)) {
             throw new YandexTranslateError('INVALID_PARAM');
         }
@@ -127,36 +111,36 @@ export default class YandexTranslate {
         if (YandexTranslate.isStringArray(text)) {
             return await Promise.all(text.map((x) => {
                 return this._detect(x, opts)
-                    .then((lang) => ({ lang } as IMultipleDetectResult))
-                    .catch((error) => ({ error } as IMultipleDetectResult));
+                    .then((lang) => ({ lang } as MultiDetectPart))
+                    .catch((error) => ({ error } as MultiDetectPartError));
             })) as U;
         } else {
             return await this._detect(text as string, opts) as U;
         }
     }
 
-    protected async _detect(text: string, opts?: IDetectOptions): Promise<string> {
+    protected async _detect(text: string, opts?: OptionsDetect): Promise<string> {
         if (YandexTranslate.isEmpty(text)) {
             return;
         }
-        const { lang } = await this.request<IDetectResponse>('detect', { text, ...opts });
+        const { lang } = await this.request<DetectResponse>('detect', { text, ...opts });
         return lang;
     }
 
-    public async getLangs(opts?: IGetLangsOptions): Promise<IGetLangsResponse> {
-        return this.request<IGetLangsResponse>('getLangs', opts);
+    public async getLangs(opts?: OptionsGetLangs): Promise<GetLangsResponse> {
+        return this.request<GetLangsResponse>('getLangs', opts);
     }
 
     protected get client(): AxiosInstance {
         if (!this._client) {
-            this._client = createHttpAgent(YandexTranslate.baseURL, YandexTranslate.timeout);
+            this._client = createHttpAgent(this.baseURL, this.timeout);
         }
         return this._client;
     }
 
     protected get queue(): PQueue {
         if (!this._queue) {
-            const queue_options: IYandexTranslateQueueOptions = this.queue_options || { concurrency: Infinity };
+            const queue_options: PQueueOptions = this.queue_options || { concurrency: Infinity };
             this._queue = new PQueue(queue_options);
         }
         return this._queue;
@@ -166,12 +150,12 @@ export default class YandexTranslate {
         return this.queue.add(async (): Promise<T> => {
             try {
                 params = { key: this.apiKey, ...params };
-                const { data }: { data?: T | IResponseRejected } = await this.client.post(endpoint, params);
+                const { data }: { data?: T | ErrorResponse } = await this.client.post(endpoint, params);
 
                 if (!data) {
                     throw new YandexTranslateError('EMPTY_DATA');
                 }
-                if ('code' in data && (data as IResponseRejected).code !== 200) {
+                if ('code' in data && (data as ErrorResponse).code !== 200) {
                     throw new YandexTranslateError(data);
                 }
 
@@ -182,7 +166,7 @@ export default class YandexTranslate {
                     if (err_data) {
                         err = new YandexTranslateError(err_data);
                     }
-                    console.error('An error occured while translating:', err_data || err);
+                    console.error('An error occured while ytranslating:', err_data || err.message);
                 }
                 throw(err);
             }
@@ -209,4 +193,4 @@ export default class YandexTranslate {
     }
 }
 
-export { YandexTranslate };
+export { YandexTranslate, OptionsTranslate, OptionsTranslateMulti, OptionsGetLangs, OptionsDetect };

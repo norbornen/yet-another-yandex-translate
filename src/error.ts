@@ -1,10 +1,10 @@
 interface IYandexTranslateErrorReason {
-    code: number;
+    readonly code: number;
     message?: string;
 }
 
 export default class YandexTranslateError extends Error {
-    public code?: number;
+    public readonly code?: number;
 
     constructor(reason: IYandexTranslateErrorReason | string) {
         if (typeof reason === 'string') {

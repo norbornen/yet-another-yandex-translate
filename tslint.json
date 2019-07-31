@@ -5,6 +5,8 @@
     ],
     "jsRules": {},
     "rules": {
+        "interface-name": false,
+        "interface-over-type-literal": false,
         "max-line-length": false,
         "member-ordering": false,
         "no-consecutive-blank-lines": false,

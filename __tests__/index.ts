@@ -2,13 +2,18 @@
 import YandexTranslate from '../src/index';
 import YandexTranslateError from '../src/error';
 
+class YandexTranslateTimed extends YandexTranslate {
+    protected timeout: number = 40;
+}
+
 const translateKey = 'trnsl.1.1.20131018T175412Z.6e9fa29e525b4697.3542f82ffa6916d1ccd64201d8a72c023892ae5e';
 const yt = new YandexTranslate(translateKey);
+const yt2 = new YandexTranslateTimed(translateKey);
+
 
 beforeEach(() => {
     jest.setTimeout(40000);
 });
-
 
 test('#err', async () => {
     expect.assertions(2);
@@ -54,10 +59,11 @@ test('#translate-array', async () => {
 });
 
 test('#translate-err', async () => {
-    expect.assertions(3);
+    expect.assertions(4);
     await expect(yt.translate('test', null)).rejects.toThrow(YandexTranslateError);
     await expect(yt.translate('test', {to: null})).rejects.toThrow(YandexTranslateError);
     await expect(yt.translate({} as unknown as string[], {to: 'en'})).rejects.toThrow(YandexTranslateError);
+    await expect(yt2.translate('test', {to: 'en'})).rejects.toThrow(Error);
 });
 
 test('#translate-multi', async () => {
@@ -77,8 +83,8 @@ test('#translate-multi-err', async () => {
 
     const res = await yt.translate('Привет мир!', {to: ['xx']});
     expect('error' in res[0]).toBe(true);
-    expect(res[0].error instanceof YandexTranslateError).toBe(true);
-    expect(res[0].error.code).toBe(501);
+    expect(res[0]['error'] instanceof YandexTranslateError).toBe(true);
+    expect(res[0]['error']['code']).toBe(501);
 
     await expect(yt.translate('Привет мир!', {to: [['xx'] as unknown as string]})).rejects.toThrow(YandexTranslateError);
 });
@@ -99,9 +105,12 @@ test('#detect-multi', async () => {
 });
 
 test('#detect-err', async () => {
-    expect.assertions(2);
+    expect.assertions(3);
     await expect(yt.detect({} as unknown as string)).rejects.toThrow(YandexTranslateError);
     await expect(yt.detect(['expect', ['1'] as unknown as string, 'merci'])).rejects.toThrow(YandexTranslateError);
+
+    const res = await yt2.detect(['expect', 'expect']);
+    expect(res[0]['error'] instanceof Error).toBe(true);
 });
 
 test('#getLangs', async () => {
