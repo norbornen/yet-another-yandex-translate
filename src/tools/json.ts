@@ -1,10 +1,7 @@
-function deserialize(raw) {
-    if (!raw || !raw[0]) {
-        return null;
-    }
-    const dest = Array.isArray(raw[0][0]) ? [] : {};
-    raw.forEach((nodes) => {
-        let acc = dest;
+function deserialize(raw = []) {
+    let dest;
+    raw.forEach((nodes = []) => {
+        let acc = dest || (dest = nodes.length === 1 ? nodes.pop() : Array.isArray(nodes[0]) ? [] : {});
         while (nodes.length > 0) {
             const node = nodes.shift();
             const key = Array.isArray(node) ? node[0] : node;
@@ -15,7 +12,7 @@ function deserialize(raw) {
     return dest;
 }
 
-function serialize(x, acc = []) {
+function serialize(x, acc = [[]]) {
     if (x === null || x === undefined || typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean') {
         acc[ 0 ].push(x);
     } else {

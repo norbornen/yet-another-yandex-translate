@@ -2,7 +2,7 @@ import PQueue, { Queue, Options, QueueAddOptions } from 'p-queue';
 import { AxiosInstance } from 'axios';
 import YandexTranslateError from './error';
 import createHttpAgent from './tools/agent';
-// import * as json from './tools/json';
+import * as json from './tools/json';
 
 // --
 type PQueueOptions = Options<Queue<QueueAddOptions>, QueueAddOptions>;
