@@ -12,5 +12,5 @@ export default (data: { [key: string]: any }): string => {
             }
         }
         return acc;
-    }, []).join('&');
+    }, [] as string[]).join('&');
 };

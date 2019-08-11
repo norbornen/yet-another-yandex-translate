@@ -2,6 +2,7 @@ import PQueue, { Queue, Options, QueueAddOptions } from 'p-queue';
 import { AxiosInstance } from 'axios';
 import YandexTranslateError from './error';
 import createHttpAgent from './tools/agent';
+// import * as json from './tools/json';
 
 // --
 type PQueueOptions = Options<Queue<QueueAddOptions>, QueueAddOptions>;
@@ -60,22 +61,22 @@ type DetectionResult<T> = T extends string[] ? Array<MultiDetectPart | MultiDete
 export default class YandexTranslate {
     protected baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
     protected timeout: number = 40 * 1000;
-    protected _client: AxiosInstance;
-    protected _queue: PQueue;
+    protected _client!: AxiosInstance;
+    protected _queue!: PQueue;
 
     constructor(
         protected apiKey: string,
         protected queue_options: false | PQueueOptions = {concurrency: 4}
     ) {}
 
-    public async translate(text: string, opts: OptionsTranslate): Promise<TranslationResult<OptionsTranslate, string>>;
-    public async translate(text: string[], opts: OptionsTranslate): Promise<TranslationResult<OptionsTranslate, string[]>>;
+    public async translate(text: string, opts: OptionsTranslate): Promise<string>;
+    public async translate(text: string[], opts: OptionsTranslate): Promise<string[]>;
     public async translate(text: string, opts: OptionsTranslateMulti): Promise<TranslationResult<OptionsTranslateMulti, string>>;
     public async translate(text: string[], opts: OptionsTranslateMulti): Promise<TranslationResult<OptionsTranslateMulti, string[]>>;
     public async translate<T extends string | string[], U extends OptionsTranslate | OptionsTranslateMulti, O extends TranslationResult<U, T>>(
         text: T,
         opts: U
-    ): Promise<O> {
+    ): Promise<O | undefined> {
         if (!YandexTranslate.isValid(text) || !opts || !opts.to || (Array.isArray(opts.to) && !YandexTranslate.isStringArray(opts.to))) {
             throw new YandexTranslateError('INVALID_PARAM');
         }
@@ -119,7 +120,7 @@ export default class YandexTranslate {
         }
     }
 
-    protected async _detect(text: string, opts?: OptionsDetect): Promise<string> {
+    protected async _detect(text: string, opts?: OptionsDetect): Promise<string | undefined> {
         if (YandexTranslate.isEmpty(text)) {
             return;
         }
