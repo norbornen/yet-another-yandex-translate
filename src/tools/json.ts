@@ -1,6 +1,6 @@
 function deserialize(raw = []) {
-    let dest;
-    raw.forEach((nodes = []) => {
+    let dest: any;
+    raw.forEach((nodes: any[] = []) => {
         let acc = dest || (dest = nodes.length === 1 ? nodes.pop() : Array.isArray(nodes[0]) ? [] : {});
         while (nodes.length > 0) {
             const node = nodes.shift();
@@ -12,7 +12,7 @@ function deserialize(raw = []) {
     return dest;
 }
 
-function serialize(x, acc = [[]]) {
+function serialize(x: any, acc: any[][] = [[]]): any[][] {
     if (x === null || x === undefined || typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean') {
         acc[ 0 ].push(x);
     } else {
@@ -20,21 +20,22 @@ function serialize(x, acc = [[]]) {
             if (x.length === 0) {
                 acc[ 0 ].push(x);
             } else {
-                acc = [].concat( ...x.map((xx, idx) => serialize(xx, [[...(acc[0] || []), [idx]]])) );
+                acc = ([] as any[][]).concat( ...x.map((xx, idx) => serialize(xx, [[...(acc[0] || []), [idx]]])) );
             }
         } else if (typeof x[Symbol.iterator] === 'function') {
             const entries = Array.from(x);
             if (entries.length === 0) {
                 acc[ 0 ].push(x);
             } else {
-                acc = [].concat( ...Array.from(x).map(([key, value]) => serialize(value, [[...(acc[0] || []), key]])) );
+                const iterable_arr: Array<[any, any]> = Array.from(x);
+                acc = ([] as any[][]).concat( ...iterable_arr.map(([key, value]) => serialize(value, [[...(acc[0] || []), key]])) );
             }
         } else {
             const keys = Object.keys(x);
             if (keys.length === 0) {
                 acc[ 0 ].push(x);
             } else {
-                acc = [].concat( ...keys.map((key) => serialize(x[key], [[...(acc[0] || []), key]])) );
+                acc = ([] as any[][]).concat( ...keys.map((key) => serialize(x[key], [[...(acc[0] || []), key]])) );
             }
         }
     }
