@@ -5,7 +5,7 @@ test('#json1', async () => {
     [
         [1, 2, {}, [], [null], 3, {[Symbol('')]: 'a'}, new Map(), new Date(), 5, {AAA: 'ccc', DSDSDS: 'sdds', 10: 5}],
         {a: 1, b: [2, 3], c: {d: [100, true]}},
-        'a', [[]], [{}], [[{}]]
+        'a', [[]], [{}], [[{}]], true, false
     ].forEach((x) => {
         expect(x).toEqual(json.deserialize(json.serialize(x)));
     });
