@@ -75,10 +75,10 @@ export default class YandexTranslate {
         source: T,
         opts: U
     ): Promise<TranslationResult<T, U>> {
-        if (typeof opts.to === 'string') {
+        if (opts && typeof opts.to === 'string') {
             return this._translate(source, opts as OptionsTranslate) as Promise<TranslationResult<T, U>>;
         }
-        if (YandexTranslate.isStringArray(opts.to)) {
+        if (opts && YandexTranslate.isStringArray(opts.to)) {
             return Promise.all(opts.to.map((to) =>
                 this._translate(source, { ...opts, to })
                     .then((translation) => ({ text: translation as T, lang: to } as MultiTranslationPart<T>))

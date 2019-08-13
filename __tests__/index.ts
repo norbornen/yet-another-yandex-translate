@@ -3,7 +3,7 @@ import YandexTranslate from '../src/index';
 import YandexTranslateError from '../src/error';
 
 class YandexTranslateTimed extends YandexTranslate {
-    protected timeout: number = 40;
+    protected timeout: number = 20;
 }
 
 const translateKey = 'trnsl.1.1.20131018T175412Z.6e9fa29e525b4697.3542f82ffa6916d1ccd64201d8a72c023892ae5e';
@@ -33,10 +33,10 @@ test('#translate-text', async () => {
 });
 
 test('#translate-text', async () => {
-    expect.assertions(3);
-    await expect(yt.translate('', {to: 'en'})).resolves.toEqual(undefined);
-    await expect(yt.translate(null, {to: 'en'})).resolves.toEqual(undefined);
-    await expect(yt.translate(undefined, {to: 'en'})).resolves.toEqual(undefined);
+    expect.assertions(5);
+    for (const x of ['', null, undefined, false, Symbol()]) {
+        await expect(yt.translate(x, {to: 'en'})).resolves.toEqual(x);
+    }
 });
 
 test('#translate-html', async () => {
@@ -47,22 +47,17 @@ test('#translate-html', async () => {
 });
 
 test('#translate-array', async () => {
-    expect.assertions(1);
+    expect.assertions(3);
     const text = 'expect';
-    await expect(yt.translate([ text, null, undefined, text ], {from: 'ru', to: 'en'})).resolves.toEqual([ text, '', '', text ]);
-});
-
-test('#translate-array', async () => {
-    expect.assertions(2);
-    await expect(yt.translate([], {to: 'en'})).resolves.toEqual(undefined);
-    await expect(yt.translate(['', null, undefined, ''], {to: 'en'})).resolves.toEqual(undefined);
+    await expect(yt.translate([ text, null, undefined, text ], {from: 'ru', to: 'en'})).resolves.toEqual([ text, null, undefined, text ]);
+    await expect(yt.translate([], {to: 'en'})).resolves.toEqual([]);
+    await expect(yt.translate(['', null, undefined, ''], {to: 'en'})).resolves.toEqual(['', null, undefined, '']);
 });
 
 test('#translate-err', async () => {
-    expect.assertions(4);
+    expect.assertions(3);
     await expect(yt.translate('test', null)).rejects.toThrow(YandexTranslateError);
     await expect(yt.translate('test', {to: null})).rejects.toThrow(YandexTranslateError);
-    await expect(yt.translate({} as unknown as string[], {to: 'en'})).rejects.toThrow(YandexTranslateError);
     await expect(yt2.translate('test', {to: 'en'})).rejects.toThrow(Error);
 });
 
@@ -87,6 +82,16 @@ test('#translate-multi-err', async () => {
     expect(res[0]['error']['code']).toBe(501);
 
     await expect(yt.translate('Привет мир!', {to: [['xx'] as unknown as string]})).rejects.toThrow(YandexTranslateError);
+});
+
+test('#translate-json', async () => {
+    expect.assertions(1);
+    await expect(yt.translate({}, {to: 'en'})).resolves.toEqual({});
+});
+
+test('#translate-json-multi', async () => {
+    expect.assertions(1);
+    await expect(yt.translate({}, {to: 'en'})).resolves.toEqual({});
 });
 
 test('#detect', async () => {
