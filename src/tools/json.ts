@@ -1,4 +1,4 @@
-function deserialize(raw = []) {
+function deserialize(raw: any[] = []) {
     let dest: any;
     raw.forEach((nodes: any[] = []) => {
         let acc = dest || (dest = nodes.length === 1 ? nodes.pop() : Array.isArray(nodes[0]) ? [] : {});

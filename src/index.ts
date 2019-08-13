@@ -97,7 +97,7 @@ export default class YandexTranslate {
                 if (!acc.has(translatable)) {
                     acc.set(translatable, []);
                 }
-                acc.get(translatable).push(idx);
+                acc.get(translatable)!.push(idx);
             }
             return acc;
         }, new Map<string, number[]>());
@@ -106,7 +106,7 @@ export default class YandexTranslate {
         if (text.length > 0) {
             const translation = await this.translateStr(text, opts as OptionsTranslate);
             translation.forEach((tr, idx) => {
-                map.get(text[idx]).forEach((i) => {
+                map.get(text[idx])!.forEach((i) => {
                     const row = source_rows[i];
                     row[row.length - 1] = tr;
                 });
@@ -126,21 +126,27 @@ export default class YandexTranslate {
         return result as T;
     }
 
-    public async detect(text: string, opts?: OptionsDetect): Promise<string>;
     public async detect(text: string[], opts?: OptionsDetect): Promise<DetectionResult<string[]>>;
-    public async detect<T extends string | string[], U extends DetectionResult<T>>(text: T, opts?: OptionsDetect): Promise<U> {
-        if (!YandexTranslate.isValid(text)) {
-            throw new YandexTranslateError('INVALID_PARAM');
-        }
-
-        if (YandexTranslate.isStringArray(text)) {
-            return await Promise.all(text.map((x) => {
-                return this._detect(x, opts)
+    public async detect<T>(text: T, opts?: OptionsDetect): Promise<DetectionResult<T>>;
+    public async detect<T, U extends DetectionResult<T>>(source: T, opts?: OptionsDetect): Promise<U | undefined> {
+        if (YandexTranslate.isStringArray(source)) {
+            return Promise.all(source.map((text) =>
+                this._detect(text, opts)
                     .then((lang) => ({ lang } as MultiDetectPart))
-                    .catch((error) => ({ error } as MultiDetectPartError));
-            })) as U;
+                    .catch((error) => ({ error } as MultiDetectPartError))
+            )) as Promise<U>;
         } else {
-            return await this._detect(text as string, opts) as U;
+            const source_rows = json.serialize(source);
+            const parts = source_rows.reduce((acc, row, idx) => {
+                const translatable = row[row.length - 1];
+                if (typeof translatable === 'string' && !YandexTranslate.isEmpty(translatable) && acc.indexOf(translatable) === -1) {
+                    acc.push(translatable);
+                }
+                return acc;
+            }, [] as string[]);
+            if (parts.length > 0) {
+                return this._detect(parts.join(' '), opts) as Promise<U>;
+            }
         }
     }
 
