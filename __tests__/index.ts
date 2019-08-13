@@ -128,13 +128,19 @@ test('#detect-multi', async () => {
     await expect(yt.detect(text)).resolves.toHaveLength(text.length);
 });
 
-test('#detect-err', async () => {
-    expect.assertions(3);
-    await expect(yt.detect({} as unknown as string)).rejects.toThrow(YandexTranslateError);
-    await expect(yt.detect(['expect', ['1'] as unknown as string, 'merci'])).rejects.toThrow(YandexTranslateError);
+test('#detect-json', async () => {
+    expect.assertions(4);
 
-    const res = await yt2.detect(['expect', 'expect']);
-    expect(res[0]['error'] instanceof Error).toBe(true);
+    const test = {
+        key1: 'Hello 1',
+        key2: 'Hello 2',
+        key3: [false, 'Hello 2', true, 'Hello 1', null],
+        key4: 123,
+    };
+    await expect(yt.detect(test)).resolves.toEqual('en');
+    await expect(yt.detect(['expect', ['1'], 'merci'])).resolves.toEqual('en');
+    await expect(yt.detect({})).resolves.toEqual(undefined);
+    await expect(yt.detect({a: 1})).resolves.toEqual(undefined);
 });
 
 test('#getLangs', async () => {
