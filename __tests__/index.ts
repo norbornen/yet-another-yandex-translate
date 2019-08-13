@@ -33,8 +33,8 @@ test('#translate-text', async () => {
 });
 
 test('#translate-text', async () => {
-    expect.assertions(5);
-    for (const x of ['', null, undefined, false, Symbol()]) {
+    expect.assertions(6);
+    for (const x of ['', null, undefined, false, Symbol(), [new Map()]]) {
         await expect(yt.translate(x, {to: 'en'})).resolves.toEqual(x);
     }
 });
@@ -85,13 +85,32 @@ test('#translate-multi-err', async () => {
 });
 
 test('#translate-json', async () => {
-    expect.assertions(1);
+    expect.assertions(2);
     await expect(yt.translate({}, {to: 'en'})).resolves.toEqual({});
+
+    const test = {
+        key1: [false, {a: {b: {c: ['Hello 1']}}}],
+        key2: 'Hello 2',
+        key3: [false, 'Hello 2', true, 'Hello 1', null],
+        key4: 123,
+        Привет: [{d: 'Hello 2'}]
+    };
+    await expect(yt.translate(test, {to: 'en'})).resolves.toEqual(test);
 });
 
 test('#translate-json-multi', async () => {
-    expect.assertions(1);
-    await expect(yt.translate({}, {to: 'en'})).resolves.toEqual({});
+    expect.assertions(2);
+
+    const test = {
+        key1: [false, {a: {b: {c: ['Hello 1']}}}],
+        key2: 'Hello 2',
+        key3: [false, 'Hello 2', true, 'Hello 1', null],
+        key4: 123,
+        Привет: [{d: 'Hello 2'}]
+    };
+    const res = await yt.translate(test, {to: ['en', 'en']});
+    expect(res[0]['text']).toEqual(test);
+    expect(res[1]['text']).toEqual(test);
 });
 
 test('#detect', async () => {
