@@ -1,8 +1,4 @@
-# yet-another-yandex-translate
-
-[![Build Status](https://travis-ci.org/norbornen/yet-another-yandex-translate.svg?branch=master)](https://travis-ci.org/norbornen/yet-another-yandex-translate)
-[![dependency status][1]][2]
-[![Greenkeeper badge](https://badges.greenkeeper.io/norbornen/yet-another-yandex-translate.svg)](https://greenkeeper.io/)
+# yet-another-yandex-translate [![Build Status](https://travis-ci.org/norbornen/yet-another-yandex-translate.svg?branch=master)](https://travis-ci.org/norbornen/yet-another-yandex-translate) [![Greenkeeper badge](https://badges.greenkeeper.io/norbornen/yet-another-yandex-translate.svg)](https://greenkeeper.io/)
 
 Translate any type of data (string, string[], json) into one or more languages.
 
@@ -95,6 +91,5 @@ await yt.getLangs({ui: 'en'});
 [Demo](https://translate.yandex.com/) | [Docs](https://tech.yandex.com/translate/) | [List of supported languages](https://yandex.ru/dev/translate/doc/dg/concepts/api-overview-docpage/#api-overview__languages) | [API Key](https://translate.yandex.com/developers/keys) | [Statistics](https://translate.yandex.com/developers/stat)
 
 
-[1]: https://david-dm.org/norbornen/yet-another-yandex-translate.svg
-[2]: https://david-dm.org/norbornen/yet-another-yandex-translate
+
 
