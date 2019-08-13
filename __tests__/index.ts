@@ -143,6 +143,13 @@ test('#detect-json', async () => {
     await expect(yt.detect({a: 1})).resolves.toEqual(undefined);
 });
 
+test('#detect-err', async () => {
+    expect.assertions(1);
+
+    const res = await yt2.detect(['expect', 'expect']);
+    expect(res[0]['error'] instanceof Error).toBe(true);
+});
+
 test('#getLangs', async () => {
     let data = await yt.getLangs();
     expect(typeof data).toBe('object');

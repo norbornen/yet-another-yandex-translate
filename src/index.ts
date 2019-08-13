@@ -118,7 +118,7 @@ export default class YandexTranslate {
         return result as T;
     }
 
-    protected async translateStr<T extends string | string[]>(text: T, opts: OptionsTranslate): Promise<T> {
+    public async translateStr<T extends string | string[]>(text: T, opts: OptionsTranslate): Promise<T> {
         const lang = opts.to && opts.from ? `${opts.from}-${opts.to}` : opts.to;
         const format = opts.format || TranslateFormat.plain;
         const { text: outputText }: { text: string[] } = await this.request<TranslateResponse>('translate', { lang, text, format });
@@ -131,7 +131,7 @@ export default class YandexTranslate {
     public async detect<T, U extends DetectionResult<T>>(source: T, opts?: OptionsDetect): Promise<U | undefined> {
         if (YandexTranslate.isStringArray(source)) {
             return Promise.all(source.map((text) =>
-                this._detect(text, opts)
+                this.detectStr(text, opts)
                     .then((lang) => ({ lang } as MultiDetectPart))
                     .catch((error) => ({ error } as MultiDetectPartError))
             )) as Promise<U>;
@@ -145,17 +145,16 @@ export default class YandexTranslate {
                 return acc;
             }, [] as string[]);
             if (parts.length > 0) {
-                return this._detect(parts.join(' '), opts) as Promise<U>;
+                return this.detectStr(parts.join(' '), opts) as Promise<U>;
             }
         }
     }
 
-    protected async _detect(text: string, opts?: OptionsDetect): Promise<string | undefined> {
-        if (YandexTranslate.isEmpty(text)) {
-            return;
+    public async detectStr(text: string, opts?: OptionsDetect): Promise<string | undefined> {
+        if (!YandexTranslate.isEmpty(text)) {
+            const { lang } = await this.request<DetectResponse>('detect', { text, ...opts });
+            return lang;
         }
-        const { lang } = await this.request<DetectResponse>('detect', { text, ...opts });
-        return lang;
     }
 
     public async getLangs(opts?: OptionsGetLangs): Promise<GetLangsResponse> {
@@ -202,13 +201,6 @@ export default class YandexTranslate {
                 throw(err);
             }
         });
-    }
-
-    protected static isValid(x: any): boolean {
-        if (typeof x === 'string' || x === null || x === undefined) {
-            return true;
-        }
-        return YandexTranslate.isStringArray(x);
     }
 
     protected static isEmpty(x: string | string[]): boolean {
