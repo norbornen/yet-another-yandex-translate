@@ -4,7 +4,7 @@
 [![dependency status][1]][2]
 [![Greenkeeper badge](https://badges.greenkeeper.io/norbornen/yet-another-yandex-translate.svg)](https://greenkeeper.io/)
 
-Yet another Yandex.Translate service client
+Translate any type of data (string, string[], json) into one or more languages.
 
 ## Installation
 
@@ -31,39 +31,63 @@ import YandexTranslate from 'yet-another-yandex-translate';
 ## Usage
 ```typescript
 const yt = new YandexTranslate('<< YOUR YANDEX API KEY HERE >>');
+```
+### Translate
 
-const text = 'Привет мир!';
+Translate any type of data (string, string[], json) into one or more languages:
 
-(async () => {
+```typescript
+// Hello world!
+await yt.translate('Привет мир!', {from: 'ru', to: 'en', format: 'html'});
 
-    // Hello world!
-    await yt.translate(text, {from: 'ru', to: 'en', format: 'html'});
+// [ 'foo', 'bar' ]
+await yt.translate([ 'foo', 'bar' ], {to: 'en', format: 'plain'});
 
-    // [ 'Hello world!', 'Hello world!' ]
-    await yt.translate([ text, text ], {to: 'en', format: 'plain'});
+// [{text: 'Hello world!', lang: 'en'}, {text: 'Bonjour tout le monde!', lang: 'fr'}]
+await yt.translate('Привет мир!', {to: ['en', 'fr']});
 
-    // [{text: 'Hello world!', lang: 'en'}, {text: 'Bonjour tout le monde!', lang: 'fr'}]
-    await yt.translate(text, {to: ['en', 'fr']});
+// [{text: ['Hello world!', 'Hello world!'], lang: 'en'}, {text: ['Bonjour tout le monde!', 'Bonjour tout le monde!'], lang: 'fr'}]
+await yt.translate(['Привет мир!', 'Привет мир!'], {to: ['en', 'fr']});   
 
-    // [{text: ['Hello world!', 'Hello world!'], lang: 'en'}, {text: ['Bonjour tout le monde!', 'Bonjour tout le monde!'], lang: 'fr'}]
-    await yt.translate([text, text], {to: ['en', 'fr']});   
+// {
+//   key1: 'Hello 1',
+//   key2: 'hi 2',
+//   key3: [ false, 'Hello 1', true, 'hi 2', null ],
+//   key4: 123,
+//   привет: [ 'hi 4' ]
+// }
+const test = {
+    key1: 'привет 1',
+    key2: 'привет 2',
+    key3: [false, 'привет 1', true, 'привет 2', null],
+    key4: 123,
+    привет: ['привет 4']
+};
+await yt.translate(text, {to: 'en'});
+```
 
+### Detect the language
+Detects the language of the specified any type of data (string, string[], json).
 
-    // ru
-    await yt.detect(text);
+```typescript
+// ru
+await yt.detect('Привет мир!');
 
-    // ru
-    await yt.detect(text, {hint: 'en,fr'});
+// ru
+await yt.detect('Привет мир!', {hint: 'en,fr'});
 
-    // [{lang: 'ru'}, {lang: 'en'}]
-    await yt.detect(['Привет мир!', 'Hello world!']); 
+// ru
+await yt.detect(test, {hint: 'en,fr'});
 
+// [{lang: 'ru'}, {lang: 'en'}]
+await yt.detect(['Привет мир!', 'Hello world!']);
+```
 
-    await yt.getLangs();
-    await yt.getLangs({ui: 'en'}); // {dirs: [], langs: {}}
-
-})();
-
+### Get the list of supported languages
+```typescript
+// {dirs: [], langs: {}}
+await yt.getLangs();
+await yt.getLangs({ui: 'en'});
 ```
 
 ## Yandex Translate
