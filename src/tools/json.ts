@@ -12,7 +12,7 @@ function deserialize(raw: any[] = []) {
     return dest;
 }
 
-function serialize(x: any, acc: any[][] = [[]]): any[][] {
+function serialize(x: any, acc: any[][] = [[]], seen: any[] = []): any[][] {
     if (x === null || x === undefined || typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean') {
         acc[ 0 ].push(x);
     } else {
@@ -20,7 +20,7 @@ function serialize(x: any, acc: any[][] = [[]]): any[][] {
             if (x.length === 0) {
                 acc[ 0 ].push(x);
             } else {
-                acc = ([] as any[][]).concat( ...x.map((xx, idx) => serialize(xx, [[...(acc[0] || []), [idx]]])) );
+                acc = ([] as any[][]).concat( ...x.map((xx, idx) => serialize(xx, [[...(acc[0] || []), [idx]]], seen)) );
             }
         } else if (typeof x[Symbol.iterator] === 'function') {
             const entries = Array.from(x);
@@ -28,14 +28,19 @@ function serialize(x: any, acc: any[][] = [[]]): any[][] {
                 acc[ 0 ].push(x);
             } else {
                 const iterable_arr: Array<[any, any]> = Array.from(x);
-                acc = ([] as any[][]).concat( ...iterable_arr.map(([key, value]) => serialize(value, [[...(acc[0] || []), key]])) );
+                acc = ([] as any[][]).concat( ...iterable_arr.map(([key, value]) => serialize(value, [[...(acc[0] || []), key]], seen)) );
             }
         } else {
+            if (seen.indexOf(x) !== -1) {
+                throw new TypeError('Converting circular structure to JSON');
+            }
+            seen.push(x);
+
             const keys = Object.keys(x);
             if (keys.length === 0) {
                 acc[ 0 ].push(x);
             } else {
-                acc = ([] as any[][]).concat( ...keys.map((key) => serialize(x[key], [[...(acc[0] || []), key]])) );
+                acc = ([] as any[][]).concat( ...keys.map((key) => serialize(x[key], [[...(acc[0] || []), key]], seen)) );
             }
         }
     }
