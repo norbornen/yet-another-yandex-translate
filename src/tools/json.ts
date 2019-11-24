@@ -23,11 +23,10 @@ function serialize(x: any, acc: any[][] = [[]], seen: any[] = []): any[][] {
                 acc = ([] as any[][]).concat( ...x.map((xx, idx) => serialize(xx, [[...(acc[0] || []), [idx]]], seen)) );
             }
         } else if (typeof x[Symbol.iterator] === 'function') {
-            const entries = Array.from(x);
-            if (entries.length === 0) {
+            const iterable_arr: Array<[any, any]> = Array.from(x);
+            if (iterable_arr.length === 0) {
                 acc[ 0 ].push(x);
             } else {
-                const iterable_arr: Array<[any, any]> = Array.from(x);
                 acc = ([] as any[][]).concat( ...iterable_arr.map(([key, value]) => serialize(value, [[...(acc[0] || []), key]], seen)) );
             }
         } else {
