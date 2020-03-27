@@ -23,7 +23,7 @@ function serialize(x: any, acc: any[][] = [[]], seen: any[] = []): any[][] {
                 acc = ([] as any[][]).concat( ...x.map((xx, idx) => serialize(xx, [[...(acc[0] || []), [idx]]], seen)) );
             }
         } else if (typeof x[Symbol.iterator] === 'function') {
-            const iterable_arr: Array<[any, any]> = Array.from(x);
+            const iterable_arr: [any, any][] = Array.from(x);
             if (iterable_arr.length === 0) {
                 acc[ 0 ].push(x);
             } else {

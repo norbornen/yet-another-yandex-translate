@@ -1,5 +1,5 @@
 import * as json from '../src/tools/json';
-import random from 'slump';
+import * as fs from 'fs';
 
 test('#json-circular-error', async () => {
     expect.assertions(1);
@@ -24,14 +24,12 @@ test('#json1', async () => {
 });
 
 test('#json2', async () => {
-    expect.assertions(50 * 3);
+    const dir = `${__dirname}/fixtures`;
+    const files = await fs.promises.readdir(dir);
 
-    for (let i = 0; i < 50; i++) {
-        const x1 = random.array();
-        const x2 = random.obj();
-        const x3 = random.json();
-        expect(x1).toEqual(json.deserialize(json.serialize(x1)));
-        expect(x2).toEqual(json.deserialize(json.serialize(x2)));
-        expect(x3).toEqual(json.deserialize(json.serialize(x3)));
+    expect.assertions(files.length);
+    for (const f of files) {
+        const data = JSON.parse(await fs.promises.readFile(`${dir}/${f}`, {encoding: 'utf8'}));
+        expect(data).toEqual(json.deserialize(json.serialize(data)));
     }
 });

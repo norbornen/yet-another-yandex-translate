@@ -3,7 +3,7 @@ import YandexTranslate from '../src/index';
 import YandexTranslateError from '../src/error';
 
 class YandexTranslateTimed extends YandexTranslate {
-    protected timeout: number = 20;
+    protected timeout: number = 15;
 }
 
 const translateKey = 'trnsl.1.1.20131018T175412Z.6e9fa29e525b4697.3542f82ffa6916d1ccd64201d8a72c023892ae5e';
@@ -116,7 +116,7 @@ test('#translate-json-multi', async () => {
 test('#detect', async () => {
     expect.assertions(5);
     await expect(yt.detect('expect')).resolves.toEqual('en');
-    await expect(yt.detect('переводчик', {hint: 'sr,az'})).resolves.toEqual('ru');
+    await expect(yt.detect('переводчик', {hint: 'hy,az'})).resolves.toEqual('ru');
     await expect(yt.detect('')).resolves.toEqual(undefined);
     await expect(yt.detect(null)).resolves.toEqual(undefined);
     await expect(yt.detect(undefined)).resolves.toEqual(undefined);

@@ -1,11 +1,9 @@
-import PQueue, { Queue, Options, QueueAddOptions } from 'p-queue';
+import PQueue, { Options, QueueAddOptions } from 'p-queue';
+import PriorityQueue from 'p-queue/dist/priority-queue';
 import { AxiosInstance } from 'axios';
 import YandexTranslateError from './error';
 import createHttpAgent from './tools/agent';
 import * as json from './tools/json';
-
-// --
-type PQueueOptions = Options<Queue<QueueAddOptions>, QueueAddOptions>;
 
 // -- options
 enum TranslateFormat {
@@ -51,11 +49,11 @@ interface GetLangsResponse extends Partial<BaseResponse> {
 // -- results
 type MultiTranslationPart<T> = { text: T, lang: string };
 type MultiTranslationPartError = { error: Error, lang: string };
-type TranslationResult<T, U extends OptionsTranslate | OptionsTranslateMulti> = U extends OptionsTranslateMulti ? Array<MultiTranslationPart<T> | MultiTranslationPartError> : T;
+type TranslationResult<T, U extends OptionsTranslate | OptionsTranslateMulti> = U extends OptionsTranslateMulti ? (MultiTranslationPart<T> | MultiTranslationPartError)[] : T;
 
 type MultiDetectPart = { lang: string };
 type MultiDetectPartError = { error: Error };
-type DetectionResult<T> = T extends string[] ? Array<MultiDetectPart | MultiDetectPartError> : string;
+type DetectionResult<T> = T extends string[] ? (MultiDetectPart | MultiDetectPartError)[] : string;
 
 
 export default class YandexTranslate {
@@ -66,7 +64,7 @@ export default class YandexTranslate {
 
     constructor(
         protected apiKey: string,
-        protected queue_options: false | PQueueOptions = {concurrency: 4}
+        protected queue_options: false | Options<PriorityQueue, QueueAddOptions> = {concurrency: 4}
     ) {}
 
     public async translate<T>(source: T, opts: OptionsTranslate): Promise<TranslationResult<T, OptionsTranslate>>;
@@ -170,8 +168,7 @@ export default class YandexTranslate {
 
     protected get queue(): PQueue {
         if (!this._queue) {
-            const queue_options: PQueueOptions = this.queue_options || { concurrency: Infinity };
-            this._queue = new PQueue(queue_options);
+            this._queue = new PQueue(this.queue_options || { concurrency: Infinity });
         }
         return this._queue;
     }
