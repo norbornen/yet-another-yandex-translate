@@ -1,5 +1,6 @@
 import * as json from '../src/tools/json';
-import * as fs from 'fs';
+import { promisify } from 'util';
+import { readdir, readFile } from 'fs';
 
 test('#json-circular-error', async () => {
     expect.assertions(1);
@@ -24,12 +25,15 @@ test('#json1', async () => {
 });
 
 test('#json2', async () => {
+    const pReaddir = promisify(readdir);
+    const pReadFile = promisify(readFile);
+
     const dir = `${__dirname}/fixtures`;
-    const files = await fs.promises.readdir(dir);
+    const files = await pReaddir(dir);
 
     expect.assertions(files.length);
     for (const f of files) {
-        const data = JSON.parse(await fs.promises.readFile(`${dir}/${f}`, {encoding: 'utf8'}));
+        const data = await pReadFile(`${dir}/${f}`, {encoding: 'utf8'}).then((rawData) => JSON.parse(rawData));
         expect(data).toEqual(json.deserialize(json.serialize(data)));
     }
 });
