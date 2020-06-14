@@ -4,12 +4,13 @@ module.exports = {
         node: true,
         jest: true,
     },
-    extends: ['xo-typescript', 'plugin:jest/style'], // 'plugin:jest/all'
+    extends: ['xo-typescript', 'plugin:jest/style'],
     plugins: ['import'],
     rules: {
         'object-curly-spacing': ['error', 'always'],
         '@typescript-eslint/indent': ['error', 4, { SwitchCase: 1 }],
         'capitalized-comments': 0,
-        'comma-dangle': ['error', 'always-multiline']
+        'comma-dangle': ['error', 'always-multiline'],
+        'jest/require-top-level-describe': 0
     }
 };

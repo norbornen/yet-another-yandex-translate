@@ -5,10 +5,10 @@
   "main": "dist/index.js",
   "types": "dist",
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "prepublishOnly": "yarn build",
-    "lint": "eslint --ext .js,.ts, .",
-    "lint:fix": "eslint --fix --ext .js,.ts, .",
+    "lint": "eslint --ext .ts, .",
+    "lint:fix": "eslint --fix --ext .ts, .",
     "test": "jest --verbose --env=node",
     "test:coverage": "jest --verbose --coverage --env=node",
     "postversion": "git push && git push --tags"
