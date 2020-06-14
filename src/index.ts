@@ -3,6 +3,8 @@
 import PQueue, { Options, QueueAddOptions } from 'p-queue';
 import PriorityQueue from 'p-queue/dist/priority-queue';
 import { AxiosInstance } from 'axios';
+import isEmpty from './tools/is_empty';
+import isStringArray from './tools/is_string_array';
 import YandexTranslateError from './error';
 import createHttpAgent from './tools/agent';
 import * as json from './tools/json';
@@ -84,7 +86,7 @@ export default class YandexTranslate {
         if (opts && typeof opts.to === 'string') {
             return this._translate(source, opts as OptionsTranslate) as Promise<TranslationResult<T, U>>;
         }
-        if (opts && YandexTranslate.isStringArray(opts.to)) {
+        if (opts && isStringArray(opts.to)) {
             return Promise.all(opts.to.map(async (to) =>
                 this._translate(source, { ...opts, to })
                     .then((translation): MultiTranslationPart<T> => ({ text: translation, lang: to }))
@@ -99,7 +101,7 @@ export default class YandexTranslate {
         const source_rows = json.serialize(source);
         const map = source_rows.reduce((acc, row, idx) => {
             const translatable = row[row.length - 1];
-            if (typeof translatable === 'string' && !YandexTranslate.isEmpty(translatable)) {
+            if (typeof translatable === 'string' && !isEmpty(translatable)) {
                 if (!acc.has(translatable)) {
                     acc.set(translatable, []);
                 }
@@ -128,14 +130,14 @@ export default class YandexTranslate {
         const lang = opts.to && opts.from ? `${opts.from}-${opts.to}` : opts.to;
         const format = opts.format || TranslateFormat.plain;
         const { text: outputText }: { text: string[] } = await this.request<TranslateResponse>('translate', { lang, text, format });
-        const result = YandexTranslate.isStringArray(text) ? outputText : outputText[0];
+        const result = isStringArray(text) ? outputText : outputText[0];
         return result as T;
     }
 
     public async detect(text: string[], opts?: OptionsDetect): Promise<DetectionResult<string[]>>;
     public async detect<T>(text: T, opts?: OptionsDetect): Promise<DetectionResult<T>>;
     public async detect<T, U extends DetectionResult<T>>(source: T, opts?: OptionsDetect): Promise<U | undefined> {
-        if (YandexTranslate.isStringArray(source)) {            
+        if (isStringArray(source)) {            
             return Promise.all(source.map(async (text) =>
                 this.detectStr(text, opts)
                     .then((lang): MultiDetectPart => ({ lang }))
@@ -145,7 +147,7 @@ export default class YandexTranslate {
             const source_rows = json.serialize(source);
             const parts = source_rows.reduce<string[]>((acc, row) => {
                 const translatable = row[row.length - 1];
-                if (typeof translatable === 'string' && !YandexTranslate.isEmpty(translatable) && !acc.includes(translatable)) {
+                if (typeof translatable === 'string' && !isEmpty(translatable) && !acc.includes(translatable)) {
                     acc.push(translatable);
                 }
                 return acc;
@@ -157,7 +159,7 @@ export default class YandexTranslate {
     }
 
     public async detectStr(text: string, opts?: OptionsDetect): Promise<string | undefined> {
-        if (!YandexTranslate.isEmpty(text)) {
+        if (!isEmpty(text)) {
             const { lang } = await this.request<DetectResponse>('detect', { text, ...opts });
             return lang;
         }
@@ -206,18 +208,6 @@ export default class YandexTranslate {
                 throw err;
             }
         });
-    }
-
-    protected static isEmpty(x: string | string[]): boolean {
-        if (Array.isArray(x)) {
-            return !x.some((xx) => !YandexTranslate.isEmpty(xx));
-        } else {
-            return x === null || x === undefined || (typeof x === 'string' && !/\S/.test(x));
-        }
-    }
-
-    protected static isStringArray(x: any): x is string[] {
-        return Array.isArray(x) && !x.some((o) => !(typeof o === 'string' || o === null || o === undefined));
     }
 }
 
