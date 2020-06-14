@@ -1,5 +1,5 @@
 export default (data: { [key: string]: any }): string => {
-    return Object.keys(data || {}).reduce((acc, k) => {
+    return Object.keys(data || {}).reduce<string[]>((acc, k) => {
         let v = data[ k ];
         if (v !== null && v !== undefined) {
             if (Array.isArray(v)) {
@@ -12,5 +12,5 @@ export default (data: { [key: string]: any }): string => {
             }
         }
         return acc;
-    }, [] as string[]).join('&');
+    }, []).join('&');
 };

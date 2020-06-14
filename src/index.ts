@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/member-ordering */
+/* eslint-disable @typescript-eslint/ban-types */
 import PQueue, { Options, QueueAddOptions } from 'p-queue';
 import PriorityQueue from 'p-queue/dist/priority-queue';
 import { AxiosInstance } from 'axios';
@@ -12,8 +14,8 @@ enum TranslateFormat {
 }
 
 type OptionsTranslate = {
-    to: string,
-    from?: string,
+    to: string;
+    from?: string;
     format?: keyof typeof TranslateFormat;
 };
 
@@ -47,24 +49,30 @@ interface GetLangsResponse extends Partial<BaseResponse> {
 }
 
 // -- results
-type MultiTranslationPart<T> = { text: T, lang: string };
-type MultiTranslationPartError = { error: Error, lang: string };
-type TranslationResult<T, U extends OptionsTranslate | OptionsTranslateMulti> = U extends OptionsTranslateMulti ? (MultiTranslationPart<T> | MultiTranslationPartError)[] : T;
+type MultiTranslationPart<T> = {
+    text: T;
+    lang: string;
+};
+type MultiTranslationPartError = {
+    error: Error;
+    lang: string;
+};
+type TranslationResult<T, U extends OptionsTranslate | OptionsTranslateMulti> = U extends OptionsTranslateMulti ? Array<MultiTranslationPart<T> | MultiTranslationPartError> : T;
 
 type MultiDetectPart = { lang: string };
 type MultiDetectPartError = { error: Error };
-type DetectionResult<T> = T extends string[] ? (MultiDetectPart | MultiDetectPartError)[] : string;
+type DetectionResult<T> = T extends string[] ? Array<MultiDetectPart | MultiDetectPartError> : string;
 
 
 export default class YandexTranslate {
-    protected baseURL: string = 'https://translate.yandex.net/api/v1.5/tr.json/';
+    protected baseURL = 'https://translate.yandex.net/api/v1.5/tr.json/';
     protected timeout: number = 40 * 1000;
     protected _client!: AxiosInstance;
     protected _queue!: PQueue;
 
     constructor(
         protected apiKey: string,
-        protected queue_options: false | Options<PriorityQueue, QueueAddOptions> = {concurrency: 4}
+        protected queue_options: false | Options<PriorityQueue, QueueAddOptions> = { concurrency: 4 }
     ) {}
 
     public async translate<T>(source: T, opts: OptionsTranslate): Promise<TranslationResult<T, OptionsTranslate>>;
@@ -77,10 +85,10 @@ export default class YandexTranslate {
             return this._translate(source, opts as OptionsTranslate) as Promise<TranslationResult<T, U>>;
         }
         if (opts && YandexTranslate.isStringArray(opts.to)) {
-            return Promise.all(opts.to.map((to) =>
+            return Promise.all(opts.to.map(async (to) =>
                 this._translate(source, { ...opts, to })
-                    .then((translation) => ({ text: translation as T, lang: to } as MultiTranslationPart<T>))
-                    .catch((error) => ({ error, lang: to } as MultiTranslationPartError))
+                    .then((translation): MultiTranslationPart<T> => ({ text: translation, lang: to }))
+                    .catch((error): MultiTranslationPartError => ({ error, lang: to }))
             )) as Promise<TranslationResult<T, U>>;
         }
 
@@ -102,7 +110,7 @@ export default class YandexTranslate {
 
         const text = Array.from(map.keys());
         if (text.length > 0) {
-            const translation = await this.translateStr(text, opts as OptionsTranslate);
+            const translation = await this.translateStr(text, opts);
             translation.forEach((tr, idx) => {
                 map.get(text[idx])!.forEach((i) => {
                     const row = source_rows[i];
@@ -127,21 +135,21 @@ export default class YandexTranslate {
     public async detect(text: string[], opts?: OptionsDetect): Promise<DetectionResult<string[]>>;
     public async detect<T>(text: T, opts?: OptionsDetect): Promise<DetectionResult<T>>;
     public async detect<T, U extends DetectionResult<T>>(source: T, opts?: OptionsDetect): Promise<U | undefined> {
-        if (YandexTranslate.isStringArray(source)) {
-            return Promise.all(source.map((text) =>
+        if (YandexTranslate.isStringArray(source)) {            
+            return Promise.all(source.map(async (text) =>
                 this.detectStr(text, opts)
-                    .then((lang) => ({ lang } as MultiDetectPart))
-                    .catch((error) => ({ error } as MultiDetectPartError))
+                    .then((lang): MultiDetectPart => ({ lang }))
+                    .catch((error): MultiDetectPartError => ({ error }))
             )) as Promise<U>;
         } else {
             const source_rows = json.serialize(source);
-            const parts = source_rows.reduce((acc, row, idx) => {
+            const parts = source_rows.reduce<string[]>((acc, row) => {
                 const translatable = row[row.length - 1];
-                if (typeof translatable === 'string' && !YandexTranslate.isEmpty(translatable) && acc.indexOf(translatable) === -1) {
+                if (typeof translatable === 'string' && !YandexTranslate.isEmpty(translatable) && !acc.includes(translatable)) {
                     acc.push(translatable);
                 }
                 return acc;
-            }, [] as string[]);
+            }, []);
             if (parts.length > 0) {
                 return this.detectStr(parts.join(' '), opts) as Promise<U>;
             }
@@ -182,7 +190,7 @@ export default class YandexTranslate {
                 if (!data) {
                     throw new YandexTranslateError('EMPTY_DATA');
                 }
-                if ('code' in data && (data as ErrorResponse).code !== 200) {
+                if ('code' in data && data.code !== 200) {
                     throw new YandexTranslateError(data);
                 }
 
@@ -195,7 +203,7 @@ export default class YandexTranslate {
                     }
                     console.error('An error occured while translating:', err_data || err.message);
                 }
-                throw(err);
+                throw err;
             }
         });
     }

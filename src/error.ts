@@ -10,8 +10,8 @@ export default class YandexTranslateError extends Error {
         if (typeof reason === 'string') {
             super(reason);
         } else {
-            super((reason && reason.message) || 'Something wrong');
-            this.code = reason && reason.code;
+            super((reason?.message) || 'Something wrong');
+            this.code = reason?.code;
         }
         this.code = this.code || 0;
         Object.setPrototypeOf(this, new.target.prototype);

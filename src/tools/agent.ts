@@ -6,8 +6,8 @@ export default (baseURL?: string, timeout?: number): AxiosInstance => {
         headers: {
             'User-Agent': 'YetAnotherYandexTranslateClient',
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept-Encoding': 'gzip, deflate, br'
-        }
+            'Accept-Encoding': 'gzip, deflate, br',
+        },
     };
     if (baseURL) {
         config.baseURL = baseURL;
